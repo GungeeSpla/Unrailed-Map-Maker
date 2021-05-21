@@ -6,14 +6,14 @@
 	const DEFAULT_WIDTH  = 40;
 	const DEFAULT_HEIGHT = 20;
 	const AUTOSAVE_DELAY = 1000;
-	
+
 	const BIOME_PLAINS = 'plains';
 	const BIOME_DESERT = 'desert';
 	const BIOME_SNOW   = 'snow';
 	const BIOME_HELL   = 'hell';
 	const BIOME_SPACE  = 'space';
 	const BIOME_MARS   = 'mars';
-	
+
 	const LAND_NONE      = 'none';
 	const LAND_PLAIN     = 'plain';
 	const LAND_WATER     = 'water';
@@ -26,7 +26,7 @@
 	const LAND_STATION_L = 'station-l';
 	const LAND_STATION_R = 'station-r';
 	const LAND_STATION_F = 'station-f';
-	
+
 	const RESOURCE_NONE         = 'none';
 	const RESOURCE_C_RAIL       = 'c-rail';
 	const RESOURCE_RAIL         = 'rail';
@@ -48,14 +48,14 @@
 	const RESOURCE_ERASER       = 'resource-eraser';
 	const RESOURCE_FACE         = 'resource-face';
 	const RESOURCE_SYMBOL       = 'resource-symbol';
-	
+
 	const MINE_AXE      = 'mine-axe-and-pickaxe';
 	const MINE_DYNAMITE = 'mine-dynamite';
-	
+
 	const PALETTE_SELECT_MINE = 'mine';
 	const PALETTE_SELECT_RESOURCE = 'resource';
 	const PALETTE_SELECT_LAND = 'land';
-	
+
 	const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 	const DIR_NONE = -1;
 	const DIR_TOP = 0;
@@ -320,7 +320,7 @@
 	const image_cache = {};               // 読み込んだ画像を格納する辞書
 	const url_queries = get_queries();    // URLクエリパラメータを格納する辞書
 	const lang_key = get_lang_key();      // 言語キー 'ja' または 'en'
-		
+
 
 	/** Cell
 	 */
@@ -1356,7 +1356,7 @@
 				save_local_storage();
 				my_console.log('Auto-saved.');
 			}
-			
+
 			is_saved = false;
 
 			// URLの書き換え
@@ -1372,7 +1372,7 @@
 	function get_lang(key) {
 		return LANG[key] ? LANG[key][lang_key] : '';
 	}
-	
+
 	
 	/** my_console
 	 * 時分秒を付けてコンソールにログを出します。
@@ -1392,7 +1392,7 @@
 			console.info(`${get_time_str()} ${str}`);
 		},
 	};
-	
+
 	
 	/** my_toaster
 	 */
@@ -1543,7 +1543,7 @@
 		const h4 = create_elm('h4').text( get_lang('toolbar-share') ).appendTo(container);
 		const d1 = create_elm('div');
 		const d2 = create_elm('div');
-		
+
 		['share-url', 'embed-tag'].forEach((id) => {
 			const sub_container = create_elm(`div.textarea-container.${id}`).appendTo(d1);
 			const h5 = create_elm('h5').text( get_lang(`toolbar-${id}`) ).appendTo(sub_container);
@@ -1699,7 +1699,7 @@
 				}
 				callback(canvas);
 			}
-			
+
 		} catch (e) {
 
 			my_console.error('Failed to create the canvas.');
@@ -1728,7 +1728,7 @@
 		return str;
 	}
 
-	
+
 	/** get_queries(url)
 	 */
 	function get_queries(url) {
@@ -1745,7 +1745,7 @@
 		return queries;
 	}
 
-	
+
 	/** get_lang_key()
 	 */
 	function get_lang_key() {
@@ -2658,13 +2658,13 @@
 			// ルートハイライト(直線)
 			highlight_route(false);
 		}
-		
+
 		// オルトキーが押されたならば
 		if (e.key === 'Alt' && !key_state[e.key]) {
 			// ルートハイライト(経路)
 			highlight_route(true);
 		}
-		
+
 		if (e.key.match(/^F\d$/) && !key_state[e.key]) {
 			const num = parseInt(e.key.replace('F', ''));
 			if (num <= 8) {
@@ -2687,7 +2687,7 @@
 				e.preventDefault();
 			}
 		}
-		
+
 		// key_stateの更新
 		key_state[e.key] = true;
 
@@ -2697,7 +2697,7 @@
 	/** window <keyup>
 	 */
 	window.addEventListener('keyup', (e) => {
-		
+
 		// シフトキーが離されたならば
 		if (e.key === 'Shift') {
 
@@ -2707,7 +2707,7 @@
 			highlight_mouse();
 
 		}
-		
+
 		// オルトキーが離されたならば
 		if (e.key === 'Alt') {
 
@@ -2774,14 +2774,14 @@
 			}, 200);
 
 			if (url_queries.share) {
-			
+
 				// URLクエリパラメータにshareが指定されているならそれを読み込む
 				open_map_from_str(url_queries.share);
 				my_toaster.success( get_lang('toaster-load-share-url') );
 				my_console.log('Loaded the URL query paramater.');
-			
+
 			} else if (save_data.last_file_key) {
-			
+
 				// 最後に扱ったファイルが存在すればそれを読み込む
 				current_file_key = save_data.last_file_key;
 				open_map_from_str( save_data.file[ save_data.last_file_key ].data );
