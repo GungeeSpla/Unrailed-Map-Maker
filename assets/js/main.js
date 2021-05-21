@@ -2,7 +2,7 @@
 
 	/** 定数定義
 	 */
-	const VERSION = '1.1'
+	const VERSION = '1.1a'
 	const DEFAULT_WIDTH  = 40;
 	const DEFAULT_HEIGHT = 20;
 	const AUTOSAVE_DELAY = 1000;
@@ -275,6 +275,7 @@
 	count-r-iron|鉄(資材)の数|Irons (Material)
 	count-r-rail|線路(資材)の数|Rails (Material)
 	count-c-rail|接続された線路の数|Rails (Connected)
+	count-bridge|橋の数|Bridges
 	count-sup|※駅の下3マスを除く|Excluding under stations.
 	open-table-title|ファイル名|Title
 	open-table-created|作成日時|Created
@@ -1550,6 +1551,7 @@
 			'r-iron': 0,
 			'c-rail': 0,
 			'r-rail': 0,
+			'bridge': 0,
 		};
 		const stations = [];
 		function is_under_station(cell) {
@@ -1577,6 +1579,9 @@
 					break;
 				case LAND_IRON:
 					count['iron']++;
+					break;
+				case LAND_BRIDGE:
+					count['bridge']++;
 					break;
 				case LAND_STATION_L:
 					stations.push(cell);
@@ -2220,10 +2225,10 @@
 				LAND_NONE,
 				LAND_PLAIN,
 				LAND_WATER,
+				LAND_BRIDGE,
 				LAND_TREE,
 				LAND_IRON,
 				LAND_ROCK,
-				LAND_BRIDGE,
 				// LAND_STEAM,
 				// LAND_THORN,
 				LAND_STATION_L,
@@ -3045,6 +3050,7 @@
 			count_elm['r-iron'] = document.getElementById('count-r-iron');
 			count_elm['r-rail'] = document.getElementById('count-r-rail');
 			count_elm['c-rail'] = document.getElementById('count-c-rail');
+			count_elm['bridge'] = document.getElementById('count-bridge');
 
 			// マップのラッパー要素をフェードイン
 			setTimeout(() => {
