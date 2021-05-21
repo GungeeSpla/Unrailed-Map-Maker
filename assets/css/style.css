@@ -247,7 +247,6 @@ textarea {
 		max-width: 60rem;
 		width: 60%;
 		font-size: 1.2rem;
-		text-align: left;
 	}
 	#modal-window .modal-container.help a {
 		color: #2196f3;
@@ -266,16 +265,19 @@ textarea {
 		font-size: 1.4rem;
 		font-weight: 700;
 		margin: 3rem 0 1rem;
+		text-align: left;
 	}
 	#modal-window .modal-container.help p {
 		line-height: 150%;
 		margin: 1rem 0;
+		text-align: left;
 	}
 	#modal-window .modal-container.help li {
 		line-height: 150%;
 		position: relative;
 		margin: .4rem 0;
 		padding-left: 1.6rem;
+		text-align: left;
 	}
 	#modal-window .modal-container.help > ul > li {
 		margin-bottom: 1rem;
