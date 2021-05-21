@@ -1,8 +1,8 @@
 (() => {
 
-
 	/** 定数定義
 	 */
+	const VERSION = '1.0b'
 	const DEFAULT_WIDTH  = 40;
 	const DEFAULT_HEIGHT = 20;
 	const AUTOSAVE_DELAY = 1000;
@@ -45,6 +45,7 @@
 	const RESOURCE_BACKET_EMPTY = 'resource-backet-empty';
 	const RESOURCE_AXE          = 'resource-axe';
 	const RESOURCE_PICKAXE      = 'resource-pickaxe';
+	const RESOURCE_BOLT         = 'resource-bolt';
 	const RESOURCE_ERASER       = 'resource-eraser';
 	const RESOURCE_FACE         = 'resource-face';
 	const RESOURCE_SYMBOL       = 'resource-symbol';
@@ -219,6 +220,7 @@
 	palette-station-f|柵|Fence
 	palette-c-rail|接続された線路|Connected Rail
 	palette-rail|線路|Rail
+	palette-resource-bolt|ボルト|Bolt
 	palette-resource-wood|木材|Wood
 	palette-resource-iron|鉄材|Iron
 	palette-resource-dynamite-1|ダイナマイト Lv1|Dynamite Lv1
@@ -238,6 +240,7 @@
 	palette-resource-face|キャラクター|Character
 	palette-mine-axe-and-pickaxe|斧とつるはしで採掘する|Mine with axe and pickaxe
 	palette-mine-dynamite|ダイナマイトで採掘する|Mine with dynamite
+	toolbar-help|ヘルプ|Help
 	toolbar-file|ファイル|File
 	toolbar-save|保存|Save
 	toolbar-save-as|名前を付けて保存|Save As
@@ -256,7 +259,7 @@
 	toolbar-copy|コピー|Copy
 	toolbar-close|閉じる|Close
 	toolbar-delete|削除|Delete
-	toaster-init|Unrailed! Map Maker へようこそ！|Welcome to Unrailed! Map Maker!
+	toaster-init|Unrailed! Map Maker Ver.{num} へようこそ！|Welcome to Unrailed! Map Maker Ver.{num}!
 	toaster-load-share-url|共有URLのデータを読み込みました。|Loaded the data from the shared URL.
 	toaster-success-copy|コピーしました！|Copied!
 	toaster-success-save|保存しました！|Saved!
@@ -311,6 +314,17 @@
 	let save_data = {                     // セーブデータ
 		file: {},                         // * ファイルを格納するための辞書
 		last_file_key: null,              // * 最後に扱ったファイル 次回起動時の読み込みに使う
+		embed_option: {                   // 埋め込みオプション
+			embed_size: 'cell-size',      // マスの大きさを固定するか全体の横幅を固定するか
+			map_size: 800,                // 全体の横幅
+			cell_size: 32,                // マスの大きさ
+		},
+		download_image_option: {          // 画像保存オプション
+			cell_size: 64,                // マスの大きさ
+			map_size: 800,                // 全体の横幅
+			type: 'png',                  // 画像形式
+			quality: 0.8,                 // 品質
+		},
 	};
 	let current_file_key = null;          // 現在扱っているファイルのキー 上書き保存に使う 未保存のデータやオートセーブのデータの場合はnull
 	let is_autosave_enabled = true;       // オートセーブが有効かどうか 一時的にオフにしたい場合はfalseにする
@@ -388,6 +402,7 @@
 				case 'S': this.resource_type = RESOURCE_DYNAMITE_1.replace('1', def.resource_count || 1); break;
 				case 'T': this._resource_type = RESOURCE_FACE; this.td.setAttribute('resource-type',  RESOURCE_FACE); this.td.setAttribute('face-id', def.resource_count); this.td.style.setProperty('--face-image', 'url(../img/face/face-'+def.resource_count+'.png)'); break;
 				case 'U': this._resource_type = RESOURCE_SYMBOL; this.td.setAttribute('resource-type',  RESOURCE_SYMBOL); this.td.setAttribute('symbol-id', def.resource_count); this.td.style.setProperty('--symbol-image', 'url(../img/symbol/'+def.resource_count+'.png)'); break;
+				case 'V': this.resource_type = RESOURCE_BOLT; break;
 				}
 			}
 			this.set_event();
@@ -764,7 +779,7 @@
 				}
 				break;
 			default:
-				if (this._resource_type !== value) {
+				if (this._resource_type !== value || value === RESOURCE_FACE || value === RESOURCE_SYMBOL) {
 					this._resource_type = value;
 					this.resource_count = 1;
 					this.rail_dir = {
@@ -1210,7 +1225,7 @@
 	 * DOM要素を新規作成します。
 	 * 引数strはdiv#hoge.fuga[piyo=piyo]のように指定します。
 	 */
-	function create_elm(str) {
+	function create_elm(str, child) {
 		let id;
 		const attrs = [];
 		const classnames = [];
@@ -1242,6 +1257,14 @@
 		if (id) elm.setAttribute('id', id);
 		classnames.forEach((name) => { elm.classList.add(name) });
 		attrs.forEach((attr) => { elm.setAttribute(attr[0], attr[1]) });
+
+		if (child) {
+			if (typeof child === 'string') {
+				elm.textContent = child;
+			} else {
+				elm.append(child);
+			}
+		}
 		return elm;
 	}
 
@@ -1320,7 +1343,9 @@
 		const json_str = localStorage.getItem('Unrailed-Map-Maker');
 		if (json_str) {
 			const json = JSON.parse(json_str);
-			save_data = json;
+			Object.keys(json).forEach((key) => {
+				save_data[key] = json[key];
+			});
 		}
 	}
 
@@ -1373,7 +1398,7 @@
 		return LANG[key] ? LANG[key][lang_key] : '';
 	}
 
-	
+
 	/** my_console
 	 * 時分秒を付けてコンソールにログを出します。
 	 */
@@ -1393,20 +1418,67 @@
 		},
 	};
 
-	
+
 	/** my_toaster
 	 */
 	const my_toaster = {
 		init() {
 			this.timer;
 			this.image = document.getElementById('bot-image');
+			this.head = document.getElementById('bot-head-area');
 			this.balloon = document.getElementById('bot-balloon');
+			let neglect_timer;
+			let move_reset_timer;
+			let move_on_head = 0;
+			let prev_mouse_x = -1;
+			let prev_mouse_y = -1;
 			this.image.addEventListener('mouseenter', (e) => {
-				this.emoji('p2-7');
+				clearTimeout(neglect_timer);
+				neglect_timer = setTimeout(() => {
+					this.emoji('p2-7');
+				}, 1000);
+			});
+			this.image.addEventListener('mouseleave', (e) => {
+				clearTimeout(neglect_timer);
+				move_reset_timer = setTimeout(() => {
+					move_on_head = 0;
+					prev_mouse_x = -1;
+					prev_mouse_y = -1;
+				}, 1000);
+			});
+			this.head.addEventListener('mousemove', (e) => {
+				clearTimeout(move_reset_timer);
+				if (prev_mouse_x > -1) {
+					move_x = Math.abs(prev_mouse_x - e.pageX);
+					move_y = Math.abs(prev_mouse_y - e.pageY);
+					move_on_head += move_x + move_y;
+					if (move_on_head > 300) {
+						move_on_head = 0;
+						this.emoji('p2-1');
+					}
+				}
+				prev_mouse_x = e.pageX;
+				prev_mouse_y = e.pageY;
 			});
 			this.image.addEventListener('click', (e) => {
-				this.emoji('p2-2');
+				clearTimeout(neglect_timer);
+				const r = parseInt(100 * Math.random());
+				let emoji;
+				if (r < 70) emoji = 'p2-2';
+				else if (r < 80) emoji = 'p1-8';
+				else if (r < 90) emoji = 'p2-3';
+				else emoji = 'p2-2-a';
+				this.emoji(emoji);
 			});
+			this.image.addEventListener('mousewheel', (e) => {
+				clearTimeout(neglect_timer);
+				e.preventDefault();
+				if (e.wheelDelta > 0) {
+					this.emoji('p3-1');
+				} else {
+					this.emoji('p3-5');
+				}
+			}, { passive: false });
 		},
 		parse(str) {
 			return str.replace(/:.+:/, (match) => {
@@ -1414,12 +1486,11 @@
 				return '<img class="single-emoji" src="./assets/img/emoji/emoji-'+type+'.png">';
 			});
 		},
-		log(str, type) {
+		log(str, time = 3000, type) {
 			this.balloon.innerHTML = this.parse(str);
 			this.balloon.classList.remove('error', 'success', 'gray', 'orange', 'emoji', 'blue');
 			this.balloon.classList.add(type);
 			this.balloon.style.setProperty('display', 'none');
-			const time = 3000;
 			this.balloon.style.setProperty('animation-duration', time + 'ms');
 			clearTimeout(this.timer);
 			this.timer = setTimeout(() => {
@@ -1429,24 +1500,24 @@
 				}, time);
 			}, 33);
 		},
-		emoji(type) {
+		emoji(type, time) {
 			const str = '<img class="single-emoji" src="./assets/img/emoji/emoji-'+type+'.png">';
-			this.log(str, 'emoji');
+			this.log(str, time, 'emoji');
 		},
-		gray(str) {
-			this.log(str, 'gray');
+		gray(str, time) {
+			this.log(str, time, 'gray');
 		},
-		orange(str) {
-			this.log(str, 'orange');
+		orange(str, time) {
+			this.log(str, time, 'orange');
 		},
-		blue(str) {
-			this.log(str, 'blue');
+		blue(str, time) {
+			this.log(str, time, 'blue');
 		},
-		success(str) {
-			this.log(str, 'success');
+		success(str, time) {
+			this.log(str, time, 'success');
 		},
-		error(str) {
-			this.log(str, 'error');
+		error(str, time) {
+			this.log(str, time, 'error');
 		},
 	}
 
@@ -1514,6 +1585,32 @@
 	}
 
 
+	/** open_help_window()
+	 * ヘルプウィンドウを開きます。
+	 */
+	function open_help_window() {
+		const close = () => {
+			main_window.classList.remove('blur');
+			modal_window.classList.add('hidden');
+			modal_window.innerHTML = '';
+		};
+		const help = document.getElementById('help-' + lang_key);
+		main_window.classList.add('blur');
+		modal_window.classList.remove('hidden');
+		const container = create_elm('div.modal-container.help');
+		container.innerHTML = help.innerHTML;
+		container.addEventListener('click', (e) => { e.stopPropagation() });
+		const d1 = create_elm('div');
+		const d2 = create_elm('div');
+		const close_button = create_elm('button.close').text( get_lang('toolbar-close') ).appendTo(d2);
+		const close_cross = create_elm('div.cross').appendTo(d2);
+		close_button.addEventListener('click', close);
+		close_cross.addEventListener('click', close);
+		container.append(d1, d2);
+		modal_window.append(container);
+	}
+
+
 	/** open_share_window()
 	 * シェアウィンドウを開きます。
 	 */
@@ -1524,12 +1621,6 @@
 
 		// 共有URL
 		const share_url = location.href.split('?')[0] + '?share=' + data;
-
-		// 埋め込み用タグ
-		const embed_width = map_cell[0].length * 32;
-		const embed_height = map_cell.length * 32;
-		const embed_url = location.href.split('?')[0] + 'emb.html?share=' + data;
-		const embed_tag = `<iframe frameborder="0" width="${embed_width}" height="${embed_height}" src="${embed_url}"></iframe>`;
 
 		const close = () => {
 			main_window.classList.remove('blur');
@@ -1544,7 +1635,7 @@
 		const d1 = create_elm('div');
 		const d2 = create_elm('div');
 
-		['share-url', 'embed-tag'].forEach((id) => {
+		['share-url', 'embed-tag'].forEach((id, i) => {
 			const sub_container = create_elm(`div.textarea-container.${id}`).appendTo(d1);
 			const h5 = create_elm('h5').text( get_lang(`toolbar-${id}`) ).appendTo(sub_container);
 			const input = create_elm(`textarea#${id}`).appendTo(sub_container);
@@ -1552,28 +1643,86 @@
 			if (id === 'share-url') {
 				input.textContent = share_url;
 				button.addEventListener('click', (e) => {
-					const ret = copy_str_to_clipboard(share_url);
+					const ret = copy_str_to_clipboard(input.value);
 					if (ret) {
 						input.select();
 						my_toaster.success( get_lang('toaster-success-copy') );
 					}
 				});
 			} else {
-				input.textContent = embed_tag;
 				button.addEventListener('click', (e) => {
-					const ret = copy_str_to_clipboard(embed_tag);
+					const ret = copy_str_to_clipboard(input.value);
 					if (ret) {
 						input.select();
 						my_toaster.success( get_lang('toaster-success-copy') );
 					}
 				});
 			}
+			if (i === 0) {
+				sub_container.append(create_elm('hr'));
+			}
 		});
+		function update_embed_tag() {
+			const x_num = map_cell[0].length;
+			const y_num = map_cell.length;
+			let cell_size = 32;
+			let embed_width = x_num * 32;
+			let embed_height = y_num * 32;
+			let embed_url;
+			if (save_data.embed_option.embed_size === 'cell-size') {
+				cell_size = Math.max(1, save_data.embed_option.cell_size);
+				embed_width = x_num * cell_size;
+				embed_height = y_num * cell_size;
+				embed_url = location.href.split('?')[0] + 'emb.html?cellsize='+cell_size+'&share=' + data;
+			} else {
+				embed_width = Math.max(1, Math.ceil(save_data.embed_option.map_size));
+				embed_height = Math.max(1, Math.ceil(save_data.embed_option.map_size * y_num / x_num));
+				embed_url = location.href.split('?')[0] + 'emb.html?share=' + data;
+			}
+			const embed_tag = `<iframe frameborder="0" width="${embed_width}" height="${embed_height}" src="${embed_url}"></iframe>`;
+			container.querySelector('#embed-tag').value = embed_tag;
+		}
+		{
+			const opt1 = create_elm('div.radio-container').appendTo(d1);
+			opt1.innerHTML = '<input type="radio" name="embed-size" id="embed-size-1" key="cell-size"><label for="embed-size-1"><span>マスの大きさを指定する</span>(<input type="text" id="embed-cell-size">px)</label>'
+			const opt2 = create_elm('div.radio-container').appendTo(d1);
+			opt2.innerHTML = '<input type="radio" name="embed-size" id="embed-size-2" key="map-size"><label for="embed-size-2"><span>マップの横幅を指定する</span>(<input type="text" id="embed-map-size">px)</label>'
+			const check = d1.querySelector(`[name=embed-size][key=${save_data.embed_option.embed_size}]`);
+			if (check) check.checked = true;
+			d1.querySelectorAll('[name=embed-size]').forEach((elm) => {
+				elm.addEventListener('change', (e) => {
+					save_data.embed_option.embed_size = elm.getAttribute('key');
+					save_local_storage();
+					update_embed_tag();
+				});
+			});
+			const text1 = d1.querySelector('#embed-cell-size');
+			text1.value = save_data.embed_option.cell_size;
+			text1.addEventListener('input', (e) => {
+				const num = parseInt(text1.value);
+				if (!isNaN(num)) {
+					save_data.embed_option.cell_size = num;
+					save_local_storage();
+					update_embed_tag();
+				}
+			});
+			const text2 = d1.querySelector('#embed-map-size');
+			text2.value = save_data.embed_option.map_size;
+			text2.addEventListener('input', (e) => {
+				const num = parseInt(text2.value);
+				if (!isNaN(num)) {
+					save_data.embed_option.map_size = num;
+					save_local_storage();
+					update_embed_tag();
+				}
+			});
+		}
 		const close_button = create_elm('button.close').text( get_lang('toolbar-close') ).appendTo(d2);
 		const close_cross = create_elm('div.cross').appendTo(d2);
 		close_button.addEventListener('click', close);
 		close_cross.addEventListener('click', close);
 		container.append(d1, d2);
+		update_embed_tag();
 		modal_window.append(container);
 	}
 
@@ -1896,6 +2045,9 @@
 			const button_download_image = create_elm('button.main-button').text( get_lang('toolbar-download-image') ).appendTo(wrapper).addEventListener('click', (e) => {
 				save_image();
 			});
+			const button_help = create_elm('button.main-button').text( get_lang('toolbar-help') ).appendTo(wrapper).addEventListener('click', (e) => {
+				open_help_window();
+			});
 			wrapper.append(create_elm('div.split'));
 			toolbar.append(wrapper);
 		}
@@ -2005,6 +2157,7 @@
 				RESOURCE_PICKAXE,
 				RESOURCE_BACKET,
 				RESOURCE_DYNAMITE_1,
+				RESOURCE_BOLT,
 				RESOURCE_FACE,
 				RESOURCE_SYMBOL,
 			].forEach((resource_type, i) => {
@@ -2267,26 +2420,28 @@
 				str += c;
 				break;
 			}
-			if (new_mode && str) {
-				const num = parseInt(str);
-				str = '';
-				switch (mode) {
-				case 'b':
-					biome = [
-						BIOME_PLAINS,
-						BIOME_DESERT,
-						BIOME_SNOW,
-						BIOME_HELL,
-						BIOME_SPACE,
-						BIOME_MARS,
-					][num - 1];
-					break;
-				case 'w':
-					width = num;
-					break;
-				case 'h':
-					height = num;
-					break;
+			if (new_mode) {
+				if (str) {
+					const num = parseInt(str);
+					str = '';
+					switch (mode) {
+					case 'b':
+						biome = [
+							BIOME_PLAINS,
+							BIOME_DESERT,
+							BIOME_SNOW,
+							BIOME_HELL,
+							BIOME_SPACE,
+							BIOME_MARS,
+						][num - 1];
+						break;
+					case 'w':
+						width = num;
+						break;
+					case 'h':
+						height = num;
+						break;
+					}
 				}
 				mode = new_mode;
 			}
@@ -2333,7 +2488,7 @@
 		let ret = '';
 
 		// バイオーム
-		if (true || map_biome !== BIOME_PLAINS) {
+		if (map_biome !== BIOME_PLAINS) {
 			ret += 'b';
 			switch (map_biome) {
 			case BIOME_PLAINS:
@@ -2556,6 +2711,9 @@
 				case RESOURCE_SYMBOL:
 					const symbol_id = cell.td.getAttribute('symbol-id');
 					cell_str += 'U' + symbol_id;
+					break;
+				case RESOURCE_BOLT:
+					cell_str += 'V';
 					break;
 				}
 				ret += cell_str;
@@ -2783,16 +2941,15 @@
 			} else if (save_data.last_file_key) {
 
 				// 最後に扱ったファイルが存在すればそれを読み込む
-				current_file_key = save_data.last_file_key;
-				open_map_from_str( save_data.file[ save_data.last_file_key ].data );
-				my_toaster.blue( get_lang('toaster-init') );
+				load(save_data.last_file_key);
+				my_toaster.gray( get_lang('toaster-init').replace('{num}', VERSION), 4000 );
 				my_console.log('Loaded the save data.');
 
 			} else {
 
 				// 存在しなければまっさらなマップを読み込む
 				make_table(BIOME_PLAINS, DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
-				my_toaster.blue( get_lang('toaster-init') );
+				my_toaster.gray( get_lang('toaster-init').replace('{num}', VERSION), 4000 );
 				my_console.log('Initialized the map table.');
 
 			}

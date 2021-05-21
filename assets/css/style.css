@@ -68,7 +68,7 @@ textarea {
 	}
 		#modal-window .modal-container button.close {
 			cursor: pointer;
-			margin: 20px 0 0;
+			margin: 1.5rem 0 1rem;
 			font-size: 1rem;
 		}
 		/*
@@ -113,12 +113,44 @@ textarea {
 			margin: .5rem .5rem 1rem;
 			font-weight; 700;
 		}
+		/** 共有
+		 */
 		#modal-window .modal-container h5 {
 			text-align: left;
 			font-size: 1rem;
 			font-weight; 700;
 			margin: 1.5rem 0 .5rem;
 		}
+		#modal-window .modal-container .radio-container {
+			text-align: left;
+		}
+		#modal-window .modal-container .radio-container:nth-child(3) {
+			margin-top: .4rem;
+		}
+			#modal-window .modal-container hr {
+				border: none;
+				border-top: 1px solid #ddd;
+				margin: 2rem 0;
+			}
+			#modal-window .modal-container input[type=radio] {
+			}
+			#modal-window .modal-container input[type=radio] + label {
+				line-height: 2.5rem;
+				cursor: pointer;
+				opacity: .5;
+			}
+			#modal-window .modal-container input[type=radio]:checked + label {
+				opacity: 1;
+			}
+			#modal-window .modal-container #embed-cell-size,
+			#modal-window .modal-container #embed-map-size {
+				width: 3.5rem;
+				min-width: auto;
+				height: 1.5rem;
+				margin: .1rem;
+				border: 1px solid #aaa;
+				text-align: center;
+			}
 		#modal-window .modal-container .textarea-container {
 		}
 			#modal-window .modal-container textarea,
@@ -144,6 +176,8 @@ textarea {
 			#modal-window .modal-container button.copy:hover {
 				color: #2196f3;
 			}
+	/** 名前を付けて保存
+	 */
 	#modal-window .modal-container.save-as {
 	}
 		#modal-window .modal-container input[type=text] {
@@ -156,7 +190,8 @@ textarea {
 			cursor: pointer;
 			font-size: 1rem;
 		}
-	
+	/** 開く
+	 */
 	#modal-window .modal-container.load {
 	}
 		#modal-window .modal-container table {
@@ -204,6 +239,62 @@ textarea {
 				#modal-window .modal-container td.delete button {
 					font-size: 1rem;
 				}
+	/** ヘルプ
+	 */
+	#modal-window .modal-container.help {
+		padding: 3rem 3rem 1rem;
+		min-width: 35rem;
+		max-width: 60rem;
+		width: 60%;
+		font-size: 1.2rem;
+		text-align: left;
+	}
+	#modal-window .modal-container.help a {
+		color: #2196f3;
+		text-decoration: none;
+	}
+	#modal-window .modal-container.help a:hover {
+		text-decoration: underline;
+	}
+	#modal-window .modal-container.help h1 {
+		text-align: center;
+		font-size: 1.6rem;
+		font-weight: 700;
+		margin: 1rem 1rem 3rem;
+	}
+	#modal-window .modal-container.help h2 {
+		font-size: 1.4rem;
+		font-weight: 700;
+		margin: 3rem 0 1rem;
+	}
+	#modal-window .modal-container.help p {
+		line-height: 150%;
+		margin: 1rem 0;
+	}
+	#modal-window .modal-container.help li {
+		line-height: 150%;
+		position: relative;
+		margin: .4rem 0;
+		padding-left: 1.6rem;
+	}
+	#modal-window .modal-container.help > ul > li {
+		margin-bottom: 1rem;
+	}
+	#modal-window .modal-container.help li:before {
+		position: absolute;
+		content: "";
+		display: inline-block;
+		width: .6rem;
+		height: .6rem;
+		left: .2rem;
+		top: .6rem;
+		background-color: #00b9ff;
+		border-radius: 50%;
+	}
+	#modal-window .modal-container.help .author {
+		text-align: center;
+		margin: 2rem 0;
+	}
 
 
 
@@ -216,20 +307,27 @@ textarea {
 	z-index: 999999;
 	bottom: 0;
 	right: 0;
-	--bot-size: 5rem;
+	--bot-size: 6rem;
 	user-select: none;
 }
 	#bot-image {
 		position: absolute;
-		right: calc(var(--bot-size) * 0.2);
+		right: calc(var(--bot-size) * 0);
 		bottom: calc(var(--bot-size) * 0.05);
-		width: calc(var(--bot-size) * 70 / 110);
+		width: calc(var(--bot-size) * 80 / 120);
 		height: var(--bot-size);
-		background-image: url(../img/common/bot.png);
+		background-image: url(../img/common/bot-2.png);
 		background-size: contain;
 		background-repeat: no-repeat;
 		background-position: right bottom;
 	}
+		#bot-head-area {
+			position: absolute;
+			right: 0;
+			top: 0;
+			width: 100%;
+			height: 50%;
+		}
 	#bot-balloon {
 		position: absolute;
 		right: calc(var(--bot-size) * 0.9);
@@ -320,6 +418,13 @@ textarea {
 		}
 	}
 
+
+/** #help
+ */
+#help-ja, #help-en {
+	display: none;
+}
+
 /** #toolbar-wapper
  */
 #toolbar-wapper {
@@ -403,7 +508,7 @@ textarea {
 	/** ファイルネーム
 	 */
 	#toolbar-wapper .file-tool button {
-		margin-right: 12px;
+		margin-left: 12px;
 	}
 	#file-name {
 		width: 15rem;
@@ -690,6 +795,9 @@ textarea {
 		}
 		[resource-type=resource-pickaxe] .resource {
 			background-image: url(../img/common/resource-pickaxe.png);
+		}
+		[resource-type=resource-bolt] .resource {
+			background-image: url(../img/common/resource-bolt.png);
 		}
 		[resource-type=resource-face] .resource {
 			background-image: var(--face-image);
