@@ -459,6 +459,10 @@ textarea {
 		font-weight: 700;
 		cursor: pointer;
 	}
+	#toolbar-wapper input[type=checkbox] {
+		margin: 0 .5rem;
+		vertical-align: middle;
+	}
 	#toolbar-wapper input[type=text],
 	#toolbar-wapper .input-side-button {
 		border: 1px solid #dadce0;
@@ -677,6 +681,7 @@ textarea {
 	transform-origin: left top;
 	transform: none;
 	background: white;
+	z-index: 9;
 	z-index: 0;
 }
 #map-table-wrapper.hidden {
@@ -881,3 +886,40 @@ textarea {
 		#map-table td.highlight-circle .highlight {
 			background-image: url(../img/common/highlight-circle.png);
 		}
+
+/** #count-wrapper
+ */
+#count-wrapper {
+	z-index: 99;
+	position: absolute;
+	width: max-content;
+	height: max-content;
+	padding: 1rem 2rem;
+	background: rgba(255, 255, 255, .7);
+	pointer-events: none;
+	color: #444;
+	right: 20px;
+	top: calc(50% - 10rem);
+}
+#count-wrapper.hidden {
+	display: none;
+}
+#count-wrapper p {
+	font-size: 1rem;
+	text-align: left;
+	line-height: 100%;
+	margin: 1rem 0;
+}
+#count-wrapper sup {
+    vertical-align: top;
+    font-size: .8rem;
+}
+#count-wrapper p.sup {
+	font-size: .8rem;
+	text-align: right;
+}
+
+
+
+
+

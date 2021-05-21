@@ -2,7 +2,7 @@
 
 	/** 定数定義
 	 */
-	const VERSION = '1.0b'
+	const VERSION = '1.1'
 	const DEFAULT_WIDTH  = 40;
 	const DEFAULT_HEIGHT = 20;
 	const AUTOSAVE_DELAY = 1000;
@@ -252,6 +252,7 @@
 	toolbar-mine-tools|採掘ツール|Mine Tools
 	toolbar-map-size|マップサイズ|Map Size
 	toolbar-grid|罫線|Grid
+	toolbar-count|カウンター|Counter
 	toolbar-download-image|画像を保存|Download Image
 	toolbar-share|共有|Share
 	toolbar-share-url|共有URL|Share URL
@@ -268,6 +269,13 @@
 	toaster-success-save-state|スロット[{num}]に一時保存しました。|Temporarily saved in slot {num}.
 	toaster-success-load-state|スロット[{num}]をロードしました。|Slot {num} is loaded.
 	toaster-success-load-state-error|スロット[{num}]にデータがありません。|No data in slot {num}.
+	count-wood|木の数|Wood
+	count-iron|鉄の数|Iron
+	count-r-wood|木(資材)の数|Woods (Material)
+	count-r-iron|鉄(資材)の数|Irons (Material)
+	count-r-rail|線路(資材)の数|Rails (Material)
+	count-c-rail|接続された線路の数|Rails (Connected)
+	count-sup|※駅の下3マスを除く|Excluding under stations.
 	open-table-title|ファイル名|Title
 	open-table-created|作成日時|Created
 	open-table-modified|更新日時|Modified
@@ -298,6 +306,8 @@
 	let main_window;                      // メインウィンドウのラッパー要素への参照
 	let modal_window;                     // モーダルウィンドウのラッパー要素への参照
 	let map_biome = BIOME_PLAINS;         // バイオーム
+	let count_wrapper;                    //
+	let count_elm = {};                   //
 	let map_wrapper;                      // マップテーブルのコンテナ要素への参照
 	let map_cell;                         // Cellオブジェクトを格納するための二次元配列 map_cell[y][x]で取り出す
 	let map_elm;                          // マップテーブルの<table><tr><td>要素への参照を格納するための辞書
@@ -329,6 +339,7 @@
 	let current_file_key = null;          // 現在扱っているファイルのキー 上書き保存に使う 未保存のデータやオートセーブのデータの場合はnull
 	let is_autosave_enabled = true;       // オートセーブが有効かどうか 一時的にオフにしたい場合はfalseにする
 	let autosave_timer;                   // オートセーブのためのsetTimeoutの戻り値を格納しておく変数
+	let autosave_timer_sub;               // サブのタイマー
 	let is_saved = true;                  // セーブされたか
 	const state_save_data = {};           // F1～F8でステートセーブ
 	const image_cache = {};               // 読み込んだ画像を格納する辞書
@@ -1210,6 +1221,8 @@
 				map_cell.pop();
 			}
 		}
+		
+		onchange();
 	}
 
 
@@ -1388,6 +1401,11 @@
 			// history.replaceState('', '', '?share=' + str);
 
 		}, AUTOSAVE_DELAY);
+		
+		clearTimeout(autosave_timer_sub);
+		autosave_timer_sub = setTimeout(() => {
+			count();
+		}, 40);
 
 	}
 
@@ -1519,6 +1537,77 @@
 		error(str, time) {
 			this.log(str, time, 'error');
 		},
+	}
+
+
+	/** count()
+	 */
+	function count() {
+		const count = {
+			'wood': 0,
+			'iron': 0,
+			'r-wood': 0,
+			'r-iron': 0,
+			'c-rail': 0,
+			'r-rail': 0,
+		};
+		const stations = [];
+		function is_under_station(cell) {
+			for (let i = 0; i < stations.length; i++) {
+				const s = stations[i];
+				const y  = s.y + 1;
+				const x1 = s.x + 0;
+				const x2 = s.x + 1;
+				const x3 = s.x + 2;
+				if (cell.y === y) {
+					if (cell.x === x1 || cell.x === x2 || cell.x === x3) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		for (let y = 0; y < map_cell.length; y++) {
+			for (let x = 0; x < map_cell[y].length; x++) {
+				const cell = map_cell[y][x];
+				let c = 1;
+				switch (cell.land_type) {
+				case LAND_TREE:
+					count['wood']++;
+					break;
+				case LAND_IRON:
+					count['iron']++;
+					break;
+				case LAND_STATION_L:
+					stations.push(cell);
+					break;
+				}
+				switch (cell.resource_type) {
+				case RESOURCE_WOOD:
+					c = cell.resource_count || 1;
+					count['r-wood'] += c;
+					break;
+				case RESOURCE_IRON:
+					c = cell.resource_count || 1;
+					count['r-iron'] += c;
+					break;
+				case RESOURCE_RAIL:
+					if (!is_under_station(cell)) {
+						c = cell.resource_count || 1;
+						count['r-rail'] += c;
+					}
+					break;
+				case RESOURCE_C_RAIL:
+					if (!is_under_station(cell)) {
+						count['c-rail']++;
+					}
+					break;
+				}
+			}
+		}
+		Object.keys(count).forEach((key) => {
+			count_elm[key].textContent = count[key];
+		});
 	}
 
 
@@ -2092,16 +2181,31 @@
 		 -------------------------------*/
 		{
 			const wrapper = create_elm('div.tool-container');
-			const input = create_elm('input[type=checkbox][id=input-grid]');
-			input.addEventListener('change', (e) => {
-				if (input.checked) {
-					map_elm.table.classList.add('grid');	
-				} else {
-					map_elm.table.classList.remove('grid');	
-				}
-			});
-			const label = create_elm('label[for=input-grid]').text( get_lang('toolbar-grid') );
-			wrapper.append(input, label);
+			{
+				const input = create_elm('input[type=checkbox][id=input-grid]');
+				input.addEventListener('change', (e) => {
+					if (input.checked) {
+						map_elm.table.classList.add('grid');	
+					} else {
+						map_elm.table.classList.remove('grid');	
+					}
+				});
+				const label = create_elm('label[for=input-grid]').text( get_lang('toolbar-grid') );
+				wrapper.append(input, label);
+			}
+			wrapper.append(create_elm('div.split'));
+			{
+				const input = create_elm('input[type=checkbox][id=input-count][checked=checked]');
+				input.addEventListener('change', (e) => {
+					if (input.checked) {
+						count_wrapper.classList.remove('hidden');	
+					} else {
+						count_wrapper.classList.add('hidden');	
+					}
+				});
+				const label = create_elm('label[for=input-count]').text( get_lang('toolbar-count') );
+				wrapper.append(input, label);
+			}
 			wrapper.append(create_elm('div.split'));
 			toolbar.append(wrapper);
 			toolbar.append(create_elm('br'));
@@ -2802,6 +2906,8 @@
 		// テーブルを挿入
 		map_wrapper.append(table);
 
+		count();
+
 		is_autosave_enabled = true;
 
 	}
@@ -2896,10 +3002,16 @@
 	 */
 	window.addEventListener('DOMContentLoaded', (e) => {
 
-		my_console.log('Unrailed Map Maker Ver.1.0');
+		my_console.log('Unrailed Map Maker Ver.' + VERSION);
 		my_console.log('Thanks, Unrailed!');
 
 		try {
+
+			document.querySelectorAll('[trans-key]').forEach((elm) => {
+				const key = elm.getAttribute('trans-key');
+				const text = get_lang(key);
+				elm.textContent = text;
+			});
 
 			my_toaster.init();
 
@@ -2925,6 +3037,14 @@
 
 			// マップのラッパー要素を作成してメインウィンドウに挿入する
 			map_wrapper = create_elm('div#map-table-wrapper.hidden').appendTo(main_window);
+
+			count_wrapper = document.getElementById('count-wrapper');
+			count_elm['wood'] = document.getElementById('count-wood');
+			count_elm['iron'] = document.getElementById('count-iron');
+			count_elm['r-wood'] = document.getElementById('count-r-wood');
+			count_elm['r-iron'] = document.getElementById('count-r-iron');
+			count_elm['r-rail'] = document.getElementById('count-r-rail');
+			count_elm['c-rail'] = document.getElementById('count-c-rail');
 
 			// マップのラッパー要素をフェードイン
 			setTimeout(() => {
