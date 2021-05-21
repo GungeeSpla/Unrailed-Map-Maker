@@ -3000,6 +3000,7 @@
 	 */
 	window.addEventListener('mouseup', (e) => {
 		mouse_state.is_down = false;
+		getSelection().empty();
 	});
 
 
