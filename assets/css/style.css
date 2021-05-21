@@ -1,0 +1,773 @@
+/** <html>
+ */
+html {
+	font-size: 16px;
+	color: #444;
+}
+
+/** <body>
+ */
+body {
+	transition-property: color, background;
+	transition-duration: 1s;
+	transition-timing-function: ease;
+	background-color: #f8f9fa;
+}
+
+body, input, button, textarea {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu,Cantarell, "Helvetica Neue", Arial,"Hiragino Kaku Gothic ProN", "Hiragino Sans", "BIZ UDPGothic", Meiryo, sans-serif;
+}
+
+button {
+	user-select: none;
+	cursor: pointer;
+}
+
+textarea {
+	resize: none;
+}
+
+/** #main-window
+ */
+#main-window {
+}
+#main-window.blur {
+	filter: blur(8px);
+}
+
+/** #modal-window
+ */
+#modal-window {
+	display: block;
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	z-index: 99999;
+	top: 0;
+	left: 0;
+	background-color: rgba(255, 255, 255, .3);
+}
+#modal-window.hidden {
+	display: none;
+}
+	#modal-window .modal-container {
+		display: block;
+		position: absolute;
+		width: max-content;
+		height: max-content;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		margin: auto;
+		padding: 20px;
+		background-color: white;
+		box-shadow: 4px 4px 8px rgba(0, 0, 0, .2);
+		border: 1px solid #999;
+		text-align: center;
+	}
+		#modal-window .modal-container button.close {
+			cursor: pointer;
+			margin: 20px 0 0;
+			font-size: 1rem;
+		}
+		/*
+		 * @see https://csshtml.work/batsu-button/
+		 */
+		#modal-window .modal-container .cross {
+			cursor: pointer;
+			display: block;
+			width: 20px;
+			height: 20px;
+			position: absolute;
+			right: 5px;
+			top: 10px;
+			user-select: none;
+		}
+		#modal-window .modal-container .cross::before,
+		#modal-window .modal-container .cross::after {
+			content: "";
+			display: block;
+			width: 100%;
+			height: 2px;
+			background: #999;
+			transform: rotate(45deg);
+			transform-origin:0% 50%;
+			position: absolute;
+			top: calc(14% - 5px);
+			left: 14%;
+		}
+		#modal-window .modal-container .cross:hover::before,
+		#modal-window .modal-container .cross:hover::after {
+			background: #777;
+		}
+		#modal-window .modal-container .cross::after{
+			transform: rotate(-45deg);
+			transform-origin:100% 50%;
+			left: auto;
+			right: 14%;
+		}
+		#modal-window .modal-container h4 {
+			text-align: center;
+			font-size: 1.5rem;
+			margin: .5rem .5rem 1rem;
+			font-weight; 700;
+		}
+		#modal-window .modal-container h5 {
+			text-align: left;
+			font-size: 1rem;
+			font-weight; 700;
+			margin: 1.5rem 0 .5rem;
+		}
+		#modal-window .modal-container .textarea-container {
+		}
+			#modal-window .modal-container textarea,
+			#modal-window .modal-container button.copy {
+				height: 3rem;
+				padding: .5rem;
+			}
+			#modal-window .modal-container .embed-tag textarea,
+			#modal-window .modal-container .embed-tag button.copy {
+				height: 10rem;
+			}
+			#modal-window .modal-container textarea {
+				width: 20rem;
+				color: #666;
+				border: 1px solid #bbb;
+				border-radius: .3rem;
+			}
+			#modal-window .modal-container button.copy {
+				vertical-align: top;
+				background: none;
+				border: none;
+			}
+			#modal-window .modal-container button.copy:hover {
+				color: #2196f3;
+			}
+	#modal-window .modal-container.save-as {
+	}
+		#modal-window .modal-container input[type=text] {
+			min-width: 20rem;
+			margin-right: .5rem;
+			font-size: 1rem;
+			padding: .4rem;
+		}
+		#modal-window .modal-container button.save {
+			cursor: pointer;
+			font-size: 1rem;
+		}
+	
+	#modal-window .modal-container.load {
+	}
+		#modal-window .modal-container table {
+			border-collapse: separate;
+			border-spacing: 2px;
+			display: block;
+			max-height: 60vh;
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
+		}
+			#modal-window .modal-container td,
+			#modal-window .modal-container th {
+				padding: 1em;
+			}
+			#modal-window .modal-container th {
+				background-color: #2196f3;
+				color: white;
+			}
+			#modal-window .modal-container tr:nth-child(odd) td {
+				background-color: #eee;
+			}
+			#modal-window .modal-container tr.delete td {
+				transition: opacity 300ms ease;
+				opacity: 0;
+			}
+			#modal-window .modal-container td.title {
+				cursor: pointer;
+			}
+			#modal-window .modal-container td.title:hover {
+				color: #2196f3;
+			}
+			#modal-window .modal-container td.created {
+				font-size: 0.8em;
+			}
+			#modal-window .modal-container td.modified {
+				font-size: 0.8em;
+			}
+			#modal-window .modal-container td.load {
+			}
+			#modal-window .modal-container td.delete {
+			}
+				#modal-window .modal-container td.load button {
+					font-size: 1rem;
+				}
+				#modal-window .modal-container td.delete button {
+					font-size: 1rem;
+				}
+
+
+
+/** #bot-container
+ */
+#bot-container {
+	position: fixed;
+	width: max-content;
+	height: max-content;
+	z-index: 999999;
+	bottom: 0;
+	right: 0;
+	--bot-size: 5rem;
+	user-select: none;
+}
+	#bot-image {
+		position: absolute;
+		right: calc(var(--bot-size) * 0.2);
+		bottom: calc(var(--bot-size) * 0.05);
+		width: calc(var(--bot-size) * 70 / 110);
+		height: var(--bot-size);
+		background-image: url(../img/common/bot.png);
+		background-size: contain;
+		background-repeat: no-repeat;
+		background-position: right bottom;
+	}
+	#bot-balloon {
+		position: absolute;
+		right: calc(var(--bot-size) * 0.9);
+		bottom: calc(var(--bot-size) * 0.5);
+		display: block;
+		margin: 0;
+		padding: 1.5rem;
+		width: max-content;
+		background: #444;
+		color: #fff;
+		font-size: 16px;
+		animation-name: bot-balloon;
+		animation-duration: 2s;
+		animation-fill-mode: forwards;
+		pointer-events: none;
+	}
+	#bot-balloon:before {
+		content: "";
+		position: absolute;
+		bottom: 0%;
+		left: 100%;
+		margin-bottom: 1rem;
+		border: .5rem solid transparent;
+		border-left: .5rem solid #444;
+	}
+	#bot-balloon.success {
+		padding-left: 3.8rem;
+		background-color: #00bcbc;
+		background-image: url(../img/common/balloon-success.png);
+		background-size: 1.5rem;
+		background-repeat: no-repeat;
+		background-position: 1.2rem center;
+	}
+	#bot-balloon.success:before {
+		border-left-color: #00bcbc;
+	}
+	#bot-balloon.error {
+		padding-left: 3.8rem;
+		background-color: #e84c3d;
+		background-image: url(../img/common/balloon-caution.png);
+		background-size: 1.5rem;
+		background-repeat: no-repeat;
+		background-position: 1.2rem center;
+	}
+	#bot-balloon.error:before {
+		border-left-color: #e84c3d;
+	}
+	#bot-balloon.blue {
+		background-color: #3598d8;
+	}
+	#bot-balloon.blue:before {
+		border-left-color: #3598d8;
+	}
+	#bot-balloon.orange {
+		background-color: #f39c11;
+	}
+	#bot-balloon.orange:before {
+		border-left-color: #f39c11;
+	}
+	#bot-balloon img {
+		width: 1.6em;
+		transform-origin: center center;
+		transform: scale(1.6) translate(.2rem, 0);
+		margin-right: .2em;
+		image-rendering: pixelated;
+	}
+	#bot-balloon.emoji {
+		min-width: initial;
+		padding: .5em;
+		padding-right: .4em;
+		padding-left: .6em;
+	}
+	#bot-balloon.emoji img {
+		width: 2em;
+		transform: none;
+	}
+	#bot-balloon.emoji:before {
+	}
+	@keyframes bot-balloon {
+		0% {
+			opacity: 0;
+		} 10% {
+			opacity: 1;
+		} 90% {
+			opacity: 1;
+		} 100% {
+			opacity: 0;
+		}
+	}
+
+/** #toolbar-wapper
+ */
+#toolbar-wapper {
+	user-select: none;
+	position: sticky;
+	left: 0;
+	top: 0;
+	background: #fbfbfb;
+	border-bottom: 1px solid #dadce0;
+	width: 100%;
+	padding: 10px;
+	z-index: 999;
+	margin-bottom: 30px;
+	box-shadow: 0 0 3px #dadce0;
+}
+	/** 全般
+	 */
+	#toolbar-wapper label,
+	#toolbar-wapper input[type=text],
+	#toolbar-wapper .input-side-button,
+	#toolbar-wapper .map-size-container:before {
+		height: 24px;
+		line-height: 24px;
+		font-size: 12px;
+		text-align: center;
+		vertical-align: middle;
+		border-radius: 5px;
+	}
+	#toolbar-wapper label {
+		font-weight: 700;
+		cursor: pointer;
+	}
+	#toolbar-wapper input[type=text],
+	#toolbar-wapper .input-side-button {
+		border: 1px solid #dadce0;
+	}
+	#toolbar-wapper input {
+		outline: none;
+	}
+	#toolbar-wapper .input-side-button {
+		line-height: 18px;
+		cursor: pointer;
+		background-color: #efefef;
+	}
+	#toolbar-wapper .input-side-button:hover {
+		background-color: #e9e9e9;
+	}
+	#toolbar-wapper .input-side-button:active {
+		background-color: #e0e0e0;
+	}
+	#toolbar-wapper .main-button:hover {
+		background-image: linear-gradient(#e9e9e9 0px, #dedede 100%);
+	}
+	#toolbar-wapper .main-button:active {
+		background-image: linear-gradient(#d4d4d4 0px, #cdcdcd 100%);
+	}
+	#toolbar-wapper .split {
+		display: inline-block;
+		border-left: 1px solid #dadce0;
+		height: 24px;
+		width: 1px;
+		margin: 0 12px;
+		vertical-align: middle;
+	}
+	/** ツールコンテナ
+	 */
+	.tool-container {
+		display: inline-block;
+		white-space: nowrap;
+		margin-bottom: 4px;
+	}
+	#toolbar-wapper h4 {
+		display: inline-block;
+		vertical-align: middle;
+		line-height: 34px;
+		height: 34px;
+		font-weight: 700;
+		font-size: 14px;
+		margin-right: 8px;
+	}
+	/** ファイルネーム
+	 */
+	#toolbar-wapper .file-tool button {
+		margin-right: 12px;
+	}
+	#file-name {
+		width: 15rem;
+	}
+	#file-name,
+	#file-save {
+		display: none;
+	}
+	#file-name.enabled,
+	#file-save.enabled {
+		display: inline-block;
+	}
+	/** マップサイズ
+	 */
+	#toolbar-wapper .url-container,
+	#toolbar-wapper .map-size-container {
+		display: inline-block;
+	}
+	#toolbar-wapper .map-size-container[dir=x]:before {
+		content: 'X';
+	}
+	#toolbar-wapper .map-size-container[dir=y]:before {
+		margin-left: 8px;
+		content: 'Y';
+	}
+	#toolbar-wapper .map-size-container:before {
+		font-weight: 700;
+		margin-right: 6px;
+	}
+	#toolbar-wapper input.url[type=text],
+	#toolbar-wapper input.map-size[type=text] {
+		border-radius: 5px 0 0 5px;
+		border: 1px solid #dadce0;
+		border-right: none;
+		width: 50px;
+	}
+	#toolbar-wapper .map-size-button-1,
+	#toolbar-wapper .map-size-button-2 {
+		width: 24px;
+	}
+	#toolbar-wapper .map-size-button-1 {
+		border-radius: 0;
+		border: 1px solid #dadce0;
+	}
+	#toolbar-wapper .map-size-button-2 {
+		border-radius: 0 5px 5px 0;
+		border: 1px solid #dadce0;
+		border-left: none;
+	}
+	/** メインボタン
+	 */
+	#toolbar-wapper .main-button {
+		background-color: #f5f5f5;
+		background-image: linear-gradient(#f5f5f5 0px, #e1e1e1 100%);
+		border-radius: 4px;
+		border: 1px solid gray;
+		color: #333;
+		font-size: 12px;
+		font-weight: 700;
+		padding: 4px 8px;
+		cursor: pointer;
+		vertical-align: middle;
+	}
+	/** URLエリア
+	 */
+	#toolbar-wapper .url {
+		border-radius: 5px 0 0 5px;
+		border: 1px solid #dadce0;
+		border-right: none;
+		width: 100px;
+	}
+	/** URLコピーボタン
+	 */
+	#toolbar-wapper .copy-button {
+		padding: 0 10px;
+		border-radius: 0 5px 5px 0;
+		border: 1px solid #dadce0;
+		border-left: none;
+	}
+	/** パレット
+	 */
+	.palette-wrapper {
+	} 
+		.palette-wrapper > ul {
+			display: inline-block;
+			vertical-align: middle;
+		}
+			.palette-wrapper > ul > li {
+			}
+			.palette-wrapper li {
+				position: relative;
+				display: inline-block;
+				box-sizing: content-box;
+				width: 32px;
+				height: 32px;
+				background-size: 100% 100%;
+				border: 1px solid #dadce0;
+				margin: 3px;
+				cursor: pointer;
+			}
+			.palette-wrapper li.palette-item[land-type=station-l] {
+				width: 64px;
+				background-image: url(../img/plains/station-l.png);
+				background-size: contain;
+				background-position: left top;
+			}
+			.palette-wrapper li.palette-item[land-type=station-r]:after {
+				content: '';
+				position: absolute;
+				top: 0;
+				right: 0;
+				width: 100%;
+				height: 100%;
+				background-image: url(../img/plains/station-r.png);
+				background-size: contain;
+				background-position: left top;
+			}
+			.palette-wrapper li:hover {
+				border-color: #b5bac2;
+			}
+			.palette-wrapper li.selected-item {
+				border: 4px solid #00bcd4;
+				margin: 0px;
+				background-size: 100% 100%;
+			}
+				.palette-wrapper > ul > li > ul {
+					position: absolute;
+					top: 100%;
+					left: -20px;
+					padding: 0 20px;
+					overflow: hidden;
+					height: 0;
+					opacity: 1;
+					--count-x: 1;
+					--count-y: 9;
+					box-sizing: content-box;
+					display: flex;
+					flex-wrap: wrap;
+				}
+				.palette-wrapper > ul > li.hover > ul {
+					width: calc(34px * var(--count-x));
+					height: calc(34px * var(--count-y));
+					opacity: 1;
+				}
+					.palette-wrapper > ul > li > ul > li {
+						z-index: 1;
+						display: inline-block;
+						margin: 0;
+						margin-left: -1px;
+						background-color: #fbfbfb;
+					}
+
+/** #map-table
+ */
+#map-table-wrapper {
+	user-select: none;
+	position: relative;
+	width: max-content;
+	margin: 0 auto;
+	border: 10px solid white;
+	box-shadow: 6px 4px 14px lightgrey;
+	transition: all 1000ms ease;
+	opacity: 1;
+	transform-origin: left top;
+	transform: none;
+	background: white;
+	z-index: 0;
+}
+#map-table-wrapper.hidden {
+	transition: none;
+	opacity: 0;
+	transform: translateY(10px);
+}
+#map-table {
+	width: max-content;
+}
+	#map-table.grid td {
+		border: 1px solid transparent;
+	}
+	#map-table td {
+		position: relative;
+		padding: 0;
+		width: 32px;
+		height: 32px;
+		background-size: 100% 100%;
+	}
+	#map-table td:hover {
+		cursor: pointer;
+	}
+		/** 地形
+		 -------------------------------*/
+		[land-type=plain] {
+			background-image: url(../img/plains/plain.png);
+		}
+		[land-type=tree] {
+			background-image: url(../img/plains/tree-a.png);
+			background-color: #de7d62;
+		}
+		[land-type=tree][life="2"] {
+			background-image: url(../img/plains/tree-a-2.png);
+			background-color: #de7d62;
+		}
+		[land-type=tree][life="1"] {
+			background-image: url(../img/plains/tree-a-1.png);
+			background-color: #de7d62;
+		}
+		[land-type=tree][life="0"] {
+			background-image: url(../img/plains/transparent.png);
+			background-color: #de7d62;
+		}
+		[land-type=iron] {
+			background-image: url(../img/plains/iron.png);
+		}
+		[land-type=iron][life="2"] {
+			background-image: url(../img/plains/iron-2.png);
+		}
+		[land-type=iron][life="1"] {
+			background-image: url(../img/plains/iron-1.png);
+		}
+		[land-type=iron][life="0"] {
+			background-image: url(../img/plains/iron-0.png);
+		}
+		[land-type=rock] {
+			background-image: url(../img/plains/rock.png);
+		}
+		[land-type=water] {
+			background-image: url(../img/plains/water.png);
+		}
+		[land-type=bridge] {
+			background-image: url(../img/plains/bridge.png);
+		}
+		[land-type=station-l] {
+			background-image: url(../img/plains/station-l.png);
+		}
+		[land-type=station-r] {
+			background-image: url(../img/plains/station-r.png);
+		}
+		[land-type=station-f] {
+			background-image: url(../img/plains/station-f.png);
+		}
+		/** 物資
+		 -------------------------------*/
+		[resource-type=resource-wood] .resource {
+			background-image: url(../img/plains/resource-wood.png);
+		}
+		[resource-type=resource-iron] .resource {
+			background-image: url(../img/plains/resource-iron.png);
+		}
+		[resource-type=resource-dynamite-1] .resource {
+			background-image: url(../img/common/dynamite-1.png);
+		}
+		[resource-type=resource-dynamite-2] .resource {
+			background-image: url(../img/common/dynamite-2.png);
+		}
+		[resource-type=resource-dynamite-3] .resource {
+			background-image: url(../img/common/dynamite-3.png);
+		}
+		[resource-type=resource-dynamite-4] .resource {
+			background-image: url(../img/common/dynamite-4.png);
+		}
+		[resource-type=resource-dynamite-5] .resource {
+			background-image: url(../img/common/dynamite-5.png);
+		}
+		[resource-type=resource-dynamite-6] .resource {
+			background-image: url(../img/common/dynamite-6.png);
+		}
+		[resource-type=resource-dynamite-7] .resource {
+			background-image: url(../img/common/dynamite-7.png);
+		}
+		[resource-type=resource-dynamite-8] .resource {
+			background-image: url(../img/common/dynamite-8.png);
+		}
+		[resource-type=resource-dynamite-9] .resource {
+			background-image: url(../img/common/dynamite-9.png);
+		}
+		[resource-type=resource-backet] .resource {
+			background-image: url(../img/common/resource-backet.png);
+		}
+		[resource-type=resource-backet-empty] .resource {
+			background-image: url(../img/common/resource-backet-empty.png);
+		}
+		[resource-type=resource-axe] .resource {
+			background-image: url(../img/common/resource-axe.png);
+		}
+		[resource-type=resource-pickaxe] .resource {
+			background-image: url(../img/common/resource-pickaxe.png);
+		}
+		[resource-type=resource-face] .resource {
+			background-image: var(--face-image);
+		}
+		[resource-type=resource-symbol] .resource {
+			background-image: var(--symbol-image);
+		}
+		/** 接続線路
+		 -------------------------------*/
+		[resource-type=c-rail] .resource {
+			background-image: url(../img/plains/c-rail-rl.png);
+		}
+		[resource-type=c-rail][rail-direction=tb] .resource {
+			background-image: url(../img/plains/c-rail-tb.png);
+		}
+		[resource-type=c-rail][rail-direction=rl] .resource {
+			background-image: url(../img/plains/c-rail-rl.png);
+		}
+		[resource-type=c-rail][rail-direction=bl] .resource {
+			background-image: url(../img/plains/c-rail-bl.png);
+		}
+		[resource-type=c-rail][rail-direction=rb] .resource {
+			background-image: url(../img/plains/c-rail-rb.png);
+		}
+		[resource-type=c-rail][rail-direction=tl] .resource {
+			background-image: url(../img/plains/c-rail-tl.png);
+		}
+		[resource-type=c-rail][rail-direction=tr] .resource {
+			background-image: url(../img/plains/c-rail-tr.png);
+		}
+		/** 資材線路
+		 -------------------------------*/
+		[resource-type=rail] .resource {
+			background-image: url(../img/plains/rail-rl.png);
+		}
+		[resource-type=rail][rail-direction=tb] .resource {
+			background-image: url(../img/plains/rail-tb.png);
+		}
+		[resource-type=rail][rail-direction=rl] .resource {
+			background-image: url(../img/plains/rail-rl.png);
+		}
+		[resource-type=rail][rail-direction=bl] .resource {
+			background-image: url(../img/plains/rail-bl.png);
+		}
+		[resource-type=rail][rail-direction=rb] .resource {
+			background-image: url(../img/plains/rail-rb.png);
+		}
+		[resource-type=rail][rail-direction=tl] .resource {
+			background-image: url(../img/plains/rail-tl.png);
+		}
+		[resource-type=rail][rail-direction=tr] .resource {
+			background-image: url(../img/plains/rail-tr.png);
+		}
+		/** ハイライト リソース カウント要素
+		 -------------------------------*/
+		#map-table td .highlight,
+		#map-table td .resource {
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			background-size: 100% 100%;
+			pointer-events: none;
+		}
+		#map-table td .count {
+			color: black;
+			font-size: 18px;
+			font-weight: 700;
+			line-height: 100%;
+			position: absolute;
+			left: 0;
+			top: 0;
+			text-shadow: white 0px -1px, white 1px 0px, white 0px 1px, white -1px 0px;
+		}
+		#map-table td.highlight-frame .highlight {
+			background-image: url(../img/common/highlight-frame.png);
+		}
+		#map-table td.highlight-circle .highlight {
+			background-image: url(../img/common/highlight-circle.png);
+		}

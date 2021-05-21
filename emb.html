@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+<script src="./assets/js/lib/base64.js"></script>
+<script src="./assets/js/lib/rawinflate.js"></script>
+<script src="./assets/js/lib/rawdeflate.js"></script>
+<script src="./assets/js/ext.js?ver=1.0"></script>
+<style>
+body{
+margin:0;
+padding:0;
+overflow:hidden;
+}
+table{
+border-collapse:collapse;
+border-spacing:0;
+width:max-content;
+transform-origin:left top;
+}
+td{
+position: relative;
+width:32px;
+height:32px;
+padding: 0;
+width: 32px;
+height: 32px;
+background-size: 100% 100%;
+}
+td div{
+position: absolute;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-size: 100% 100%;
+pointer-events: none;
+}
+td p{
+color: black;
+font-size: 18px;
+font-weight: 700;
+line-height: 100%;
+position: absolute;
+left: 0;
+top: 0;
+text-shadow: white 0px -1px, white 1px 0px, white 0px 1px, white -1px 0px;
+}
+</style>
+</head>
+<body>
+<script>
+const DEFAULT_WIDTH  = 40;
+const DEFAULT_HEIGHT = 20;
+const BIOME_PLAINS = 'plains';
+const BIOME_DESERT = 'desert';
+const BIOME_SNOW   = 'snow';
+const BIOME_HELL   = 'hell';
+const BIOME_SPACE  = 'space';
+const BIOME_MARS   = 'mars';
+const query_str = location.href.slice(location.href.indexOf('?') + 1);
+const queries = {};
+query_str.split('&').forEach((query_str) => {
+	const query_arr = query_str.split('=');
+	queries[query_arr[0]] = query_arr[1];
+});
+const map_str = decodeURIComponent(queries.share).inflate() + 'a';
+let biome = BIOME_PLAINS;
+let width = DEFAULT_WIDTH;
+let height = DEFAULT_HEIGHT;
+let str = '';
+let mode = '';
+let i;
+for (i = 0; i < map_str.length; i++) {
+	const c = map_str.charAt(i);
+	let new_mode;
+	switch (c) {
+	case 'b':
+	case 'w':
+	case 'h':
+	case 'm':
+		new_mode = c;
+		break;
+	default:
+		str += c;
+		break;
+	}
+	if (new_mode && str) {
+		const num = parseInt(str);
+		str = '';
+		switch (mode) {
+		case 'b':
+			biome = [
+				BIOME_PLAINS,
+				BIOME_DESERT,
+				BIOME_SNOW,
+				BIOME_HELL,
+				BIOME_SPACE,
+				BIOME_MARS,
+			][num - 1];
+			break;
+		case 'w':
+			width = num;
+			break;
+		case 'h':
+			height = num;
+			break;
+		}
+		mode = new_mode;
+	}
+	if (mode === 'm') {
+		i++;
+		break;
+	}
+}
+let defs = [];
+let opt;
+let num_str = '';
+for (; i < map_str.length; i++) {
+	const c = map_str.charAt(i);
+	if (c.match(/[a-s]/)) {
+		if (opt) {
+			if (num_str) {
+				opt.resource_count = parseInt(num_str);
+				num_str = '';
+			}
+			defs.push(opt);
+		}
+		opt = {
+			land_char: c
+		};
+	} else if (c.match(/[A-Z]/)) {
+		opt.resource_char = c;
+	} else if (c.match(/[0-9]/)) {
+		num_str += c;
+	}
+}
+const table = document.createElement('table');
+for (let i = 0, y = 0; y < height; y++) {
+	const tr = document.createElement('tr');
+	for (let x = 0; x < width; x++) {
+		const def = defs ? defs[i] : null;
+		const td = document.createElement('td');
+		const div = document.createElement('div');
+		const p = document.createElement('div');
+		td.append(div, p);
+		if (def) {
+			switch (def.land_char) {
+			case 'a': td.style.setProperty('background-image', 'url(./assets/img/plains/plain.png)'); break;
+			case 'b': td.style.setProperty('background-image', 'url(./assets/img/plains/plain.png)'); break;
+			case 'c': td.style.setProperty('background-image', 'url(./assets/img/plains/station-l.png)'); break;
+			case 'd': td.style.setProperty('background-image', 'url(./assets/img/plains/station-r.png)'); break;
+			case 'e': td.style.setProperty('background-image', 'url(./assets/img/plains/station-f.png)'); break;
+			case 'f': td.style.setProperty('background-image', 'url(./assets/img/plains/tree-a.png)'); td.style.setProperty('background-color', '#de7d62'); break;
+			case 'g': td.style.setProperty('background-image', 'url(./assets/img/plains/tree-a-2.png)'); td.style.setProperty('background-color', '#de7d62'); break;
+			case 'h': td.style.setProperty('background-image', 'url(./assets/img/plains/tree-a-1.png)'); td.style.setProperty('background-color', '#de7d62'); break;
+			case 'i': td.style.setProperty('background-image', 'url(./assets/img/plains/tree-a-0.png)'); td.style.setProperty('background-color', '#de7d62'); break;
+			case 'j': td.style.setProperty('background-image', 'url(./assets/img/plains/tree-a-0.png)'); td.style.setProperty('background-color', '#de7d62'); break;
+			case 'k': td.style.setProperty('background-image', 'url(./assets/img/plains/iron.png)'); break;
+			case 'l': td.style.setProperty('background-image', 'url(./assets/img/plains/iron-2.png)'); break;
+			case 'm': td.style.setProperty('background-image', 'url(./assets/img/plains/iron-1.png)'); break;
+			case 'n': td.style.setProperty('background-image', 'url(./assets/img/plains/iron-0.png)'); break;
+			case 'o': td.style.setProperty('background-image', 'url(./assets/img/plains/iron-0.png)'); break;
+			case 'p': td.style.setProperty('background-image', 'url(./assets/img/plains/rock.png)'); break;
+			case 'q': td.style.setProperty('background-image', 'url(./assets/img/plains/water.png)'); break;
+			case 'r': td.style.setProperty('background-image', 'url(./assets/img/plains/bridge.png)'); break;
+			case 's': td.style.setProperty('background-image', 'url(./assets/img/plains/steam.png)'); break;
+			case 't': td.style.setProperty('background-image', 'url(./assets/img/plains/thorn.png)'); break;
+			}
+			switch (def.resource_char) {
+			case 'A': div.style.setProperty('background-image', 'url(./assets/img/plains/c-rail-rl.png)'); break;
+			case 'B': div.style.setProperty('background-image', 'url(./assets/img/plains/c-rail-tb.png)'); break;
+			case 'C': div.style.setProperty('background-image', 'url(./assets/img/plains/c-rail-tr.png)'); break;
+			case 'D': div.style.setProperty('background-image', 'url(./assets/img/plains/c-rail-rb.png)'); break;
+			case 'E': div.style.setProperty('background-image', 'url(./assets/img/plains/c-rail-bl.png)'); break;
+			case 'F': div.style.setProperty('background-image', 'url(./assets/img/plains/c-rail-tl.png)'); break;
+			case 'G': div.style.setProperty('background-image', 'url(./assets/img/plains/rail-rl.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'H': div.style.setProperty('background-image', 'url(./assets/img/plains/rail-tb.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'I': div.style.setProperty('background-image', 'url(./assets/img/plains/rail-tr.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'J': div.style.setProperty('background-image', 'url(./assets/img/plains/rail-rb.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'K': div.style.setProperty('background-image', 'url(./assets/img/plains/rail-bl.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'L': div.style.setProperty('background-image', 'url(./assets/img/plains/rail-tl.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'M': div.style.setProperty('background-image', 'url(./assets/img/plains/resource-wood.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'N': div.style.setProperty('background-image', 'url(./assets/img/plains/resource-iron.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'O': div.style.setProperty('background-image', 'url(./assets/img/common/resource-axe.png)'); break;
+			case 'P': div.style.setProperty('background-image', 'url(./assets/img/common/resource-pickaxe.png)'); break;
+			case 'Q': div.style.setProperty('background-image', 'url(./assets/img/common/resource-backet.png)'); break;
+			case 'R': div.style.setProperty('background-image', 'url(./assets/img/common/resource-backet-empty.png)'); break;
+			case 'S': div.style.setProperty('background-image', 'url(./assets/img/common/dynamite-'+def.resource_count+'.png)'); break;
+			case 'T': div.style.setProperty('background-image', 'url(./assets/img/face/face-'+def.resource_count+'.png)'); break;
+			case 'U': div.style.setProperty('background-image', 'url(./assets/img/symbol/'+def.resource_count+'.png)'); break;
+			}
+		}
+		tr.append(td);
+		i++;
+	}
+	table.append(tr);
+}
+document.body.append(table);
+window.onresize = () => {
+	const ww = window.innerWidth;
+	const tw = width * 32;
+	const r = ww / tw;
+	table.style.setProperty('transform', 'scale('+r+')');
+};
+window.onresize();
+</script>
+</body>
+</html>

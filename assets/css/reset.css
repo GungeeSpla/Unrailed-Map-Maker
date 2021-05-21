@@ -1,0 +1,40 @@
+/** リセット
+ * @see https://qiita.com/Moris_Mk-II/items/17e9a725aada8f96f23e
+ */
+html,body,div,p,span,h1,h2,h3,h4,h5,ul,ol,li {
+	margin:0;
+	padding:0;
+	border:0;
+	outline:0;
+	font-size:100%;
+	vertical-align:baseline;
+	background:transparent;
+}
+body {
+	line-height:1;
+}
+ol,ul {
+	list-style: none;
+}
+a {
+	margin:0;
+	padding:0;
+	font-size:100%;
+	vertical-align:baseline;
+	background:transparent;
+	text-decoration: none;
+}
+*, *:before, *:after {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -o-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    box-sizing: border-box;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+button:focus {
+	outline: 0;
+}
