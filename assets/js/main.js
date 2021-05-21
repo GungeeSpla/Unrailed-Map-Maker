@@ -712,7 +712,13 @@
 					let that = map_cell[ny][nx];
 					// そこが敷いてある線路の終端ならば
 					if (that.check_end_of_rail()) {
-						that.rail_dir[that.get_free_dir()] = j;
+						const d1 = that.get_free_dir();
+						const d2 = (d1 === 'from') ? 'to' : 'from';
+						that.rail_dir[d1] = j;
+						if (that.is_flexible) {
+							that.rail_dir[d2] = i;
+							that.is_flexible = false;
+						}
 						that.update_rail();
 						this.rail_dir[this.get_free_dir(i)] = i;
 						this.update_rail();
@@ -752,9 +758,8 @@
 					// 周囲との接続を試みる
 					if (this.connectToEndOfRail()) {
 					} else {
+						this.is_flexible = true;
 						this.update_rail();
-						this.is_connected = false;
-						this.is_end_of_rail = true;
 					}
 				}
 				break;
@@ -1239,36 +1244,6 @@
 		attrs.forEach((attr) => { elm.setAttribute(attr[0], attr[1]) });
 		return elm;
 	}
-	/** put_station(x, y, is_start) {
-	 * 駅を配置します。
-	 */
-	function put_station(x, y, is_start) {
-		// 駅がまるまるマップに収まるかチェック
-		if (is_on_map(x, y) && is_on_map(x + 2, y + 1)) {
-
-			map_cell[y + 0][x + 0].land_type = LAND_STATION_L;
-			map_cell[y + 0][x + 1].land_type = LAND_STATION_R;
-
-			map_cell[y + 1][x + 0].resource_type = is_start ? RESOURCE_C_RAIL : RESOURCE_RAIL;
-			map_cell[y + 1][x + 0].rail_dir.from = 3;
-			map_cell[y + 1][x + 0].rail_dir.to = 1;
-			map_cell[y + 1][x + 0].is_connected = is_start;
-
-			map_cell[y + 1][x + 1].resource_type = is_start ? RESOURCE_C_RAIL : RESOURCE_RAIL;
-			map_cell[y + 1][x + 1].rail_dir.from = 3;
-			map_cell[y + 1][x + 0].rail_dir.to = 1;
-			map_cell[y + 1][x + 1].is_connected = is_start;
-
-			if (is_start) {
-				map_cell[y + 1][x + 2].resource_type = RESOURCE_C_RAIL;
-				map_cell[y + 1][x + 2].rail_dir.from = 3;
-				map_cell[y + 1][x + 2].is_connected = true;
-				map_cell[y + 1][x + 2].is_end_of_rail = true;
-			} else {
-				map_cell[y + 1][x + 2].land_type = LAND_STATION_F;
-			}
-		}
-	}
 
 
 	/** fill(x, y, land_type, start_land_type)
@@ -1487,7 +1462,7 @@
 				title,
 				created: current_file_key,
 				modified: timestamp,
-				map_data: map_to_str(),
+				data: map_to_str(),
 			};
 			is_saved = true;
 			save_data.last_file_key = current_file_key;
@@ -1888,7 +1863,8 @@
 			input.addEventListener('click', (e) => {
 			});
 			wrapper.append(input);
-			const button_save = create_elm('button#file-save.main-button').text( get_lang('toolbar-save') ).appendTo(wrapper).addEventListener('click', (e) => {
+			const button_save = create_elm('button#file-save.main-button').text( get_lang('toolbar-save') ).appendTo(wrapper);
+			button_save.addEventListener('click', (e) => {
 				if (button_save.classList.contains('enabled')) {
 					save();
 					my_toaster.success( get_lang('toaster-success-save') );
@@ -1988,8 +1964,8 @@
 				LAND_NONE,
 				LAND_PLAIN,
 				LAND_WATER,
-				LAND_IRON,
 				LAND_TREE,
+				LAND_IRON,
 				LAND_ROCK,
 				LAND_BRIDGE,
 				// LAND_STEAM,
@@ -2025,8 +2001,8 @@
 				RESOURCE_WOOD,
 				RESOURCE_IRON,
 				RESOURCE_RAIL,
-				RESOURCE_PICKAXE,
 				RESOURCE_AXE,
+				RESOURCE_PICKAXE,
 				RESOURCE_BACKET,
 				RESOURCE_DYNAMITE_1,
 				RESOURCE_FACE,
