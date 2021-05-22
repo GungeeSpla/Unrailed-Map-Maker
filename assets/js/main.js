@@ -2,7 +2,7 @@
 
 	/** 定数定義
 	 */
-	const VERSION = '1.2a'
+	const VERSION = '1.2b'
 	const DEFAULT_WIDTH  = 40;
 	const DEFAULT_HEIGHT = 20;
 	const AUTOSAVE_DELAY = 1000;
@@ -499,7 +499,14 @@
 				} else if (e.button === 2) {
 
 					// 右クリック
-					document.querySelector(`[land-type=${this.land_type}]`).trigger('click');
+					if (this.land_type.includes(LAND_COLOR)) {
+						const li = document.querySelector(`[land-type=${LAND_COLOR_1}]`);
+						li.trigger('click');
+						li.style.setProperty('background-image', `url(./assets/img/color/${this.land_type.replace('color-', '')}.png)`);
+						
+					} else {
+						document.querySelector(`[land-type=${this.land_type}]`).trigger('click');
+					}
 					my_console.log(this);
 
 				}
