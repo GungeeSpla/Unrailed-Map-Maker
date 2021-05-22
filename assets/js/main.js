@@ -2,7 +2,7 @@
 
 	/** 定数定義
 	 */
-	const VERSION = '1.2b'
+	const VERSION = '1.2c'
 	const DEFAULT_WIDTH  = 40;
 	const DEFAULT_HEIGHT = 20;
 	const AUTOSAVE_DELAY = 1000;
@@ -445,7 +445,7 @@
 				case 'V': this.resource_type = RESOURCE_BOLT; break;
 				}
 				switch (def.symbol_char) {
-				case 'X': this._symbol_type = SYMBOL_SYMBOL; this.td.setAttribute('symbol-type',  SYMBOL_SYMBOL); this.td.setAttribute('symbol-id', def.symbol_id); this.td.style.setProperty('--face-image', 'url(../img/face/face-'+def.symbol_id+'.png)'); break;
+				case 'X': this._symbol_type = SYMBOL_SYMBOL; this.td.setAttribute('symbol-type',  SYMBOL_SYMBOL); this.td.setAttribute('symbol-id', def.symbol_id); this.td.style.setProperty('--symbol-image', 'url(../img/symbol/'+def.symbol_id+'.png)'); break;
 				}
 			}
 			this.set_event();
@@ -2599,7 +2599,7 @@
 					sub_ul.style.setProperty('--count-y', '5');
 					sub_ul.style.setProperty('left', 'initial');
 					sub_ul.style.setProperty('right', '-31px');
-					for (let j = 0; j <= 41; j++) {
+					for (let j = 0; j <= 49; j++) {
 						const sub_li = create_elm('li');
 						sub_li.style.setProperty('background-image', `url(./assets/img/symbol/${j}.png)`);
 						sub_li.addEventListener('click', (e) => {
