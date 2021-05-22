@@ -1111,7 +1111,7 @@
 		}
 		from.explore_data.score = 0;
 		to.explore_data.is_end = true;
-		explore_loop(from);
+		explore_loop(from, 0);
 		const route = [];
 		if (to.explore_data.from) {
 			let cell = to;
@@ -1128,9 +1128,9 @@
 	}
 
 
-	/** explore_loop(cell)
+	/** explore_loop(cell, depth)
 	 */
-	function explore_loop(cell) {
+	function explore_loop(cell, depth) {
 		let add_score = 0;
 		DIRS.forEach((dir) => {
 			const nx = cell.x + dir[0];
@@ -1147,13 +1147,13 @@
 			const ny = cell.y + dir[1];
 			if (is_on_map(nx, ny)) {
 				const to = map_cell[ny][nx];
-				if (to.land_type !== LAND_ROCK) {
+				if (to.land_type !== LAND_ROCK && to.resource_type !== RESOURCE_C_RAIL) {
 					const score = cell.explore_data.score - 1 + add_score;
 					if (score > to.explore_data.score) {
 						to.explore_data.score = score;
 						to.explore_data.from = cell;
 						if (!to.explore_data.is_end) {
-							explore_loop(to, cell);
+							explore_loop(to, depth + 1);
 						}
 					}
 				}
