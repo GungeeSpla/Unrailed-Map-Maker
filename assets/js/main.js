@@ -2,7 +2,7 @@
 
 	/** 定数定義
 	 */
-	const VERSION = '1.2'
+	const VERSION = '1.2a'
 	const DEFAULT_WIDTH  = 40;
 	const DEFAULT_HEIGHT = 20;
 	const AUTOSAVE_DELAY = 1000;
@@ -2270,7 +2270,7 @@
 						main_window.classList.add('grid');
 					} else {
 						save_data.option.is_enabled_grid = false;
-						save_data.classList.remove('grid');	
+						main_window.classList.remove('grid');	
 					}
 					save_local_storage();
 				});
