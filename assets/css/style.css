@@ -615,6 +615,9 @@ textarea {
 				margin: 3px;
 				cursor: pointer;
 			}
+			.palette-wrapper li.palette-item[land-type=none] {
+				background-image: url(../img/plains/transparent-check.png);
+			}
 			.palette-wrapper li.palette-item[land-type=station-l] {
 				width: 64px;
 				background-image: url(../img/plains/station-l.png);
@@ -692,7 +695,7 @@ textarea {
 #map-table {
 	width: max-content;
 }
-	#map-table.grid td {
+	#main-window.grid #map-table td {
 		border: 1px solid transparent;
 	}
 	#map-table td {
@@ -707,6 +710,9 @@ textarea {
 	}
 		/** 地形
 		 -------------------------------*/
+		[land-type=none] {
+			background-image: url(../img/plains/transparent.png);
+		}
 		[land-type=plain] {
 			background-image: url(../img/plains/plain.png);
 		}
@@ -755,6 +761,39 @@ textarea {
 		}
 		[land-type=station-f] {
 			background-image: url(../img/plains/station-f.png);
+		}
+		[land-type=color-1] {
+			background-image: url(../img/color/1.png);
+		}
+		[land-type=color-2] {
+			background-image: url(../img/color/2.png);
+		}
+		[land-type=color-3] {
+			background-image: url(../img/color/3.png);
+		}
+		[land-type=color-4] {
+			background-image: url(../img/color/4.png);
+		}
+		[land-type=color-5] {
+			background-image: url(../img/color/5.png);
+		}
+		[land-type=color-6] {
+			background-image: url(../img/color/6.png);
+		}
+		[land-type=color-7] {
+			background-image: url(../img/color/7.png);
+		}
+		[land-type=color-8] {
+			background-image: url(../img/color/8.png);
+		}
+		[land-type=color-9] {
+			background-image: url(../img/color/9.png);
+		}
+		[land-type=color-10] {
+			background-image: url(../img/color/10.png);
+		}
+		[land-type=color] {
+			background-image: var(--color-image);
 		}
 		/** 物資
 		 -------------------------------*/
@@ -809,7 +848,7 @@ textarea {
 		[resource-type=resource-face] .resource {
 			background-image: var(--face-image);
 		}
-		[resource-type=resource-symbol] .resource {
+		[symbol-type=symbol-symbol] .symbol {
 			background-image: var(--symbol-image);
 		}
 		/** 接続線路
@@ -860,6 +899,7 @@ textarea {
 		}
 		/** ハイライト リソース カウント要素
 		 -------------------------------*/
+		#map-table td .symbol,
 		#map-table td .highlight,
 		#map-table td .resource {
 			position: absolute;

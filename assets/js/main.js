@@ -2,7 +2,7 @@
 
 	/** 定数定義
 	 */
-	const VERSION = '1.1a'
+	const VERSION = '1.2'
 	const DEFAULT_WIDTH  = 40;
 	const DEFAULT_HEIGHT = 20;
 	const AUTOSAVE_DELAY = 1000;
@@ -26,6 +26,17 @@
 	const LAND_STATION_L = 'station-l';
 	const LAND_STATION_R = 'station-r';
 	const LAND_STATION_F = 'station-f';
+	const LAND_COLOR     = 'color';
+	const LAND_COLOR_1    = 'color-1';
+	const LAND_COLOR_2    = 'color-2';
+	const LAND_COLOR_3    = 'color-3';
+	const LAND_COLOR_4    = 'color-4';
+	const LAND_COLOR_5    = 'color-5';
+	const LAND_COLOR_6    = 'color-6';
+	const LAND_COLOR_7    = 'color-7';
+	const LAND_COLOR_8    = 'color-8';
+	const LAND_COLOR_9    = 'color-9';
+	const LAND_COLOR_10   = 'color-10';
 
 	const RESOURCE_NONE         = 'none';
 	const RESOURCE_C_RAIL       = 'c-rail';
@@ -50,12 +61,17 @@
 	const RESOURCE_FACE         = 'resource-face';
 	const RESOURCE_SYMBOL       = 'resource-symbol';
 
+	const SYMBOL_ERASER         = 'symbol-eraser';
+	const SYMBOL_SYMBOL         = 'symbol-symbol';
+	const SYMBOL_NONE           = 'symbol-none';
+
 	const MINE_AXE      = 'mine-axe-and-pickaxe';
 	const MINE_DYNAMITE = 'mine-dynamite';
 
-	const PALETTE_SELECT_MINE = 'mine';
+	const PALETTE_SELECT_LAND     = 'land';
 	const PALETTE_SELECT_RESOURCE = 'resource';
-	const PALETTE_SELECT_LAND = 'land';
+	const PALETTE_SELECT_SYMBOL   = 'symbol';
+	const PALETTE_SELECT_MINE     = 'mine';
 
 	const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 	const DIR_NONE = -1;
@@ -214,12 +230,14 @@
 	palette-water|水|Water
 	palette-iron|鉄|Iron
 	palette-tree|木|Wood
+	palette-color|色|Color
 	palette-rock|黒岩|Black Rock
 	palette-bridge|橋|Bridge
 	palette-station-l|駅|Station
 	palette-station-f|柵|Fence
 	palette-c-rail|接続された線路|Connected Rail
 	palette-rail|線路|Rail
+	palette-color-1|色|Color
 	palette-resource-bolt|ボルト|Bolt
 	palette-resource-wood|木材|Wood
 	palette-resource-iron|鉄材|Iron
@@ -238,6 +256,8 @@
 	palette-resource-pickaxe|つるはし|Pickaxe
 	palette-resource-eraser|消しゴム(アイテムを消す)|Eraser (Remove Items)
 	palette-resource-face|キャラクター|Character
+	palette-symbol-eraser|消しゴム(記号を消す)|Eraser
+	palette-symbol-symbol|記号|Symbol
 	palette-mine-axe-and-pickaxe|斧とつるはしで採掘する|Mine with axe and pickaxe
 	palette-mine-dynamite|ダイナマイトで採掘する|Mine with dynamite
 	toolbar-help|ヘルプ|Help
@@ -249,6 +269,7 @@
 	toolbar-new|新規作成|New
 	toolbar-grounds|地形|Grounds
 	toolbar-items|アイテム|Items
+	toolbar-symbols|記号|Symbols
 	toolbar-mine-tools|採掘ツール|Mine Tools
 	toolbar-map-size|マップサイズ|Map Size
 	toolbar-grid|罫線|Grid
@@ -336,6 +357,10 @@
 			type: 'png',                  // 画像形式
 			quality: 0.8,                 // 品質
 		},
+		option: {                         //
+			is_enabled_count: false,      //
+			is_enabled_grid: false,       //
+		},
 	};
 	let current_file_key = null;          // 現在扱っているファイルのキー 上書き保存に使う 未保存のデータやオートセーブのデータの場合はnull
 	let is_autosave_enabled = true;       // オートセーブが有効かどうか 一時的にオフにしたい場合はfalseにする
@@ -360,11 +385,13 @@
 			this.td = create_elm('td');
 			this.td.cell = this;
 			this.resource_elm = create_elm('div.resource').appendTo(this.td);
+			this.symbol_elm = create_elm('div.symbol').appendTo(this.td);
 			this.highlight_elm = create_elm('div.highlight').appendTo(this.td);
 			this.resource_count_elm = create_elm('p.count').appendTo(this.td);
-			this.land_type = LAND_PLAIN;
 			this.life = 3;
+			this.land_type = LAND_PLAIN;
 			this.resource_type = RESOURCE_NONE;
+			this.symbol_type = SYMBOL_NONE;
 			this.rail_dir = {
 				from: DIR_NONE,
 				to: DIR_NONE,
@@ -391,6 +418,7 @@
 				case 'r': this.land_type = LAND_BRIDGE; break;
 				case 's': this.land_type = LAND_STEAM; break;
 				case 't': this.land_type = LAND_THORN; break;
+				case 'u': this.land_type = LAND_COLOR_1.replace('1', def.land_num); break;
 				}
 				switch (def.resource_char) {
 				case 'A': this._resource_type = RESOURCE_C_RAIL; this.td.setAttribute('resource-type',  RESOURCE_C_RAIL); this.rail_dir = { from: DIR_LEFT,   to: DIR_RIGHT  }; this.update_rail(); break;
@@ -416,6 +444,9 @@
 				case 'U': this._resource_type = RESOURCE_SYMBOL; this.td.setAttribute('resource-type',  RESOURCE_SYMBOL); this.td.setAttribute('symbol-id', def.resource_count); this.td.style.setProperty('--symbol-image', 'url(../img/symbol/'+def.resource_count+'.png)'); break;
 				case 'V': this.resource_type = RESOURCE_BOLT; break;
 				}
+				switch (def.symbol_char) {
+				case 'X': this._symbol_type = SYMBOL_SYMBOL; this.td.setAttribute('symbol-type',  SYMBOL_SYMBOL); this.td.setAttribute('symbol-id', def.symbol_id); this.td.style.setProperty('--face-image', 'url(../img/face/face-'+def.symbol_id+'.png)'); break;
+				}
 			}
 			this.set_event();
 		}
@@ -440,7 +471,10 @@
 					if (key_state['Control']) {
 
 						// コントロールキーが押されているなら塗りつぶし
-						fill(this.x, this.y, mouse_state.current_palette_item, this.land_type);
+						if (mouse_state.current_palette_type === PALETTE_SELECT_LAND) {
+							fill(this.x, this.y, mouse_state.current_palette_item, this.land_type);
+							onchange();
+						}
 
 					} else if (key_state['Shift'] || key_state['Alt']) {
 
@@ -449,7 +483,8 @@
 							cell.apply_palette();
 						});
 						highlight_reset();
-
+						onchange();
+						
 					} else {
 
 						// 何のキーも押されていないならここを塗る
@@ -553,6 +588,9 @@
 					this.resource_type = mouse_state.current_palette_item;
 				}
 				break;
+			case PALETTE_SELECT_SYMBOL:
+				this.symbol_type = mouse_state.current_palette_item;
+				break;
 			case PALETTE_SELECT_MINE:
 				switch (mouse_state.current_palette_item) {
 				case MINE_AXE:
@@ -606,25 +644,21 @@
 		/** .is_vacant
 		 */
 		is_vacant() {
-			/*
-			const LAND_NONE = 'none';
-			const LAND_PLAIN = 'plain';
-			const LAND_WATER = 'water';
-			const LAND_IRON = 'iron';
-			const LAND_TREE = 'tree';
-			const LAND_ROCK = 'rock';
-			const LAND_BRIDGE = 'bridge';
-			const LAND_STATION_L = 'station-l';
-			const LAND_STATION_R = 'station-r';
-			const RESOURCE_FENCE = 'station-fence';
-			const RESOURCE_NONE = 'none';
-			const RESOURCE_RAIL = 'rail';
-			const RESOURCE_WOOD = 'resource-wood';
-			const RESOURCE_IRON = 'resource-iron';
-			*/
 			let ret = false;
-			if (this.land_type === LAND_PLAIN) {
-				ret = true;
+			switch (this.land_type) {
+			case LAND_PLAIN: ret = true; break;
+			case LAND_COLOR_1: ret = true; break;
+			case LAND_COLOR_2: ret = true; break;
+			case LAND_COLOR_3: ret = true; break;
+			case LAND_COLOR_4: ret = true; break;
+			case LAND_COLOR_5: ret = true; break;
+			case LAND_COLOR_6: ret = true; break;
+			case LAND_COLOR_7: ret = true; break;
+			case LAND_COLOR_8: ret = true; break;
+			case LAND_COLOR_9: ret = true; break;
+			case LAND_COLOR_10: ret = true; break;
+			case LAND_BRIDGE: ret = true; break;
+			default: break;
 			}
 			return ret;
 		}
@@ -756,6 +790,27 @@
 				}
 			}
 			return ret;
+		}
+
+		/** .symbol_type
+		 */
+		get symbol_type() {
+			return this._symbol_type;
+		}
+		set symbol_type(value) {
+			switch (value) {
+			case RESOURCE_ERASER:
+				this._symbol_type = RESOURCE_NONE;
+				this.td.setAttribute('symbol-type',  value);
+				break;
+			default:
+				this._symbol_type = value;
+				this.td.setAttribute('symbol-type',  value);
+				const symbol_id = document.getElementById('palette-symbol').getAttribute('symbol-id');
+				this.td.setAttribute('symbol-id', symbol_id);
+				this.td.style.setProperty('--symbol-image', 'url(../img/symbol/'+symbol_id+'.png)');
+				break;
+			}
 		}
 
 		/** .resource_type
@@ -1286,7 +1341,10 @@
 	/** fill(x, y, land_type, start_land_type)
 	 * 座標(x, y)を基準に塗りつぶし処理を行います。
 	 */
-	function fill(x, y, land_type, start_land_type) {
+	function fill(x, y, land_type, start_land_type, depth = 0) {
+		if (depth === 0 && map_cell[y][x].land_type === land_type) {
+			return;
+		}
 		if (map_cell[y][x].land_type === start_land_type) {
 			map_cell[y][x].land_type = land_type;
 		} else {
@@ -1294,19 +1352,19 @@
 		}
 		// 上
 		if (y > 0) {
-			fill(x, y - 1, land_type, start_land_type);
+			fill(x, y - 1, land_type, start_land_type, depth + 1);
 		}
 		// 下
 		if (y + 1 < map_cell.length) {
-			fill(x, y + 1, land_type, start_land_type);
+			fill(x, y + 1, land_type, start_land_type, depth + 1);
 		}
 		// 右
 		if (x + 1 < map_cell[0].length) {
-			fill(x + 1, y, land_type, start_land_type);
+			fill(x + 1, y, land_type, start_land_type, depth + 1);
 		}
 		// 左
 		if (x > 0) {
-			fill(x - 1, y, land_type, start_land_type);
+			fill(x - 1, y, land_type, start_land_type, depth + 1);
 		}
 	}
 
@@ -1411,10 +1469,26 @@
 	}
 
 
+	/** get_lang_key()
+	 */
+	function get_lang_key() {
+		const navigator_lang_key = navigator.language || navigator.userLanguage || 'ja';
+		return url_queries.lang === 'en' ? 'en' :
+			url_queries.lang === 'ja' ? 'ja' :
+			navigator_lang_key.includes('ja') ? 'ja' :
+			'en';
+	}
+
+
 	/** get_lang(key)
 	 */
 	function get_lang(key) {
-		return LANG[key] ? LANG[key][lang_key] : '';
+		if (LANG[key]) {
+			return LANG[key][lang_key];
+		} else {
+			console.error(key + ' is undefined.');
+			return '';
+		}
 	}
 
 
@@ -1904,8 +1978,10 @@
 					const cell = map_cell[y][x];
 					const td_style = window.getComputedStyle(cell.td);
 					const resource_style = window.getComputedStyle(cell.resource_elm);
+					const symbol_style = window.getComputedStyle(cell.symbol_elm);
 					load_img(td_style['background-image']);
 					load_img(resource_style['background-image']);
+					load_img(symbol_style['background-image']);
 				}	
 			}
 
@@ -1918,14 +1994,17 @@
 						const td_style = window.getComputedStyle(cell.td);
 						const resource_style = window.getComputedStyle(cell.resource_elm);
 						const count_style = window.getComputedStyle(cell.resource_count_elm);
+						const symbol_style = window.getComputedStyle(cell.symbol_elm);
 						const img_1 = image_cache[td_style['background-image']];
 						const img_2 = image_cache[resource_style['background-image']];
+						const img_3 = image_cache[symbol_style['background-image']];
 						const ctx_x = x * cell_size;
 						const ctx_y = y * cell_size;
 						ctx.fillStyle = td_style['background-color'];
 						ctx.fillRect(ctx_x, ctx_y, cell_size, cell_size);
 						if (img_1) ctx.drawImage(img_1, ctx_x, ctx_y, cell_size, cell_size);
 						if (img_2) ctx.drawImage(img_2, ctx_x, ctx_y, cell_size, cell_size);
+						if (img_3) ctx.drawImage(img_3, ctx_x, ctx_y, cell_size, cell_size);
 						if (count_style['display'] === 'block') {
 							ctx.fillStyle = '#000';
 							ctx.font = `bold ${Math.ceil(cell_size * 0.45)}px ${count_style['font-family']}`;
@@ -1942,6 +2021,11 @@
 				}
 				callback(canvas);
 			}
+
+			if (img_count === 0) {
+				onload_all_image();
+			}
+
 
 		} catch (e) {
 
@@ -1986,17 +2070,6 @@
 			queries[query_arr[0]] = query_arr[1];
 		});
 		return queries;
-	}
-
-
-	/** get_lang_key()
-	 */
-	function get_lang_key() {
-		const navigator_lang_key = navigator.language || navigator.userLanguage || 'ja';
-		return url_queries.lang === 'en' ? 'en' :
-			url_queries.lang === 'ja' ? 'ja' :
-			navigator_lang_key.includes('ja') ? 'ja' :
-			'en';
 	}
 
 
@@ -2160,19 +2233,22 @@
 					}
 				});
 				input.addEventListener('change', (e) => {
+					let val = parseInt(input.value);
+					val = Math.max(1, Math.min(99, val));
+					input.value = val;
 					change_map_size();
 				});
 				const button_1 = create_elm('button.input-side-button.map-size-button-1').text('-');
 				button_1.addEventListener('click', (e) => {
 					let val = parseInt(input.value);
-					val -= 1;
+					val = Math.max(1, Math.min(99, val - 1));
 					input.value = val;
 					change_map_size();
 				});
 				const button_2 = create_elm('button.input-side-button.map-size-button-2').text('+');
 				button_2.addEventListener('click', (e) => {
 					let val = parseInt(input.value);
-					val += 1;
+					val = Math.max(1, Math.min(99, val + 1));
 					input.value = val;
 					change_map_size();
 				});
@@ -2190,24 +2266,38 @@
 				const input = create_elm('input[type=checkbox][id=input-grid]');
 				input.addEventListener('change', (e) => {
 					if (input.checked) {
-						map_elm.table.classList.add('grid');	
+						save_data.option.is_enabled_grid = true;
+						main_window.classList.add('grid');
 					} else {
-						map_elm.table.classList.remove('grid');	
+						save_data.option.is_enabled_grid = false;
+						save_data.classList.remove('grid');	
 					}
+					save_local_storage();
 				});
+				if (save_data.option.is_enabled_grid) {
+					input.checked = true;
+					input.trigger('change');
+				}
 				const label = create_elm('label[for=input-grid]').text( get_lang('toolbar-grid') );
 				wrapper.append(input, label);
 			}
 			wrapper.append(create_elm('div.split'));
 			{
-				const input = create_elm('input[type=checkbox][id=input-count][checked=checked]');
+				const input = create_elm('input[type=checkbox][id=input-count]');
 				input.addEventListener('change', (e) => {
 					if (input.checked) {
+						save_data.option.is_enabled_count = true;
 						count_wrapper.classList.remove('hidden');	
 					} else {
+						save_data.option.is_enabled_count = false;
 						count_wrapper.classList.add('hidden');	
 					}
+					save_local_storage();
 				});
+				if (save_data.option.is_enabled_count) {
+					input.checked = true;
+					input.trigger('change');
+				}
 				const label = create_elm('label[for=input-count]').text( get_lang('toolbar-count') );
 				wrapper.append(input, label);
 			}
@@ -2233,17 +2323,62 @@
 				// LAND_THORN,
 				LAND_STATION_L,
 				LAND_STATION_F,
+				LAND_COLOR_1,
 			].forEach((land_type) => {
+
 				const li = create_elm(`li.palette-item[land-type=${land_type}]`);
 				li.setAttribute('title', get_lang('palette-' + land_type));
+
+				// クリック時の動作
 				li.addEventListener('click', (e) => {
 					document.querySelectorAll('.selected-item').forEach((elm) => {
 						elm.classList.remove('selected-item');
 					});
 					li.classList.add('selected-item');
-					mouse_state.current_palette_item = land_type;
+					if (land_type === LAND_COLOR_1) {
+						mouse_state.current_palette_item = LAND_COLOR_1.replace('1', li.getAttribute('color-id'));
+					} else {
+						mouse_state.current_palette_item = land_type;
+					}
 					mouse_state.current_palette_type = PALETTE_SELECT_LAND;
 				});
+
+				// サブメニューの作成
+				switch (land_type) {
+				case LAND_COLOR_1:
+				{
+					// 記号
+					li.setAttribute('color-id', 1);
+					li.addEventListener('mouseenter', (e) => {
+						li.classList.add('hover');
+					});
+					li.addEventListener('mouseleave', (e) => {
+						li.classList.remove('hover');
+					});
+					li.style.setProperty('background-image', `url(./assets/img/color/1.png)`);
+					const sub_ul = create_elm('ul');
+					sub_ul.style.setProperty('--count-x', '1');
+					sub_ul.style.setProperty('--count-y', '10');
+					//sub_ul.style.setProperty('left', 'initial');
+					//sub_ul.style.setProperty('right', '-26px');
+					for (let j = 1; j <= 10; j++) {
+						const sub_li = create_elm('li');
+						sub_li.style.setProperty('background-image', `url(./assets/img/color/${j}.png)`);
+						sub_li.addEventListener('click', (e) => {
+							document.querySelectorAll('.selected-wrapper').forEach((elm) => {
+								elm.classList.remove('selected-wrapper');
+							});
+							li.classList.add('selected-wrapper');
+							li.classList.remove('hover');
+							li.style.setProperty('background-image', `url(./assets/img/color/${j}.png)`);
+							li.setAttribute('color-id', j);
+						});
+						sub_ul.append(sub_li);
+					}
+					li.append(sub_ul);
+					break;
+				}}
+				
 				ul.append(li);
 			});
 			wrapper.append(ul);
@@ -2268,7 +2403,6 @@
 				RESOURCE_DYNAMITE_1,
 				RESOURCE_BOLT,
 				RESOURCE_FACE,
-				RESOURCE_SYMBOL,
 			].forEach((resource_type, i) => {
 
 				const dir = (1 <= i && i <= 4) ? 'plains' : 'common';
@@ -2350,6 +2484,7 @@
 					for (let j = 1; j <= 9; j++) {
 						const sub_li = create_elm('li');
 						sub_li.style.setProperty('background-image', `url(./assets/img/common/dynamite-${j}.png)`);
+						sub_li.setAttribute('title', get_lang('palette-resource-dynamite-' + j));
 						sub_li.addEventListener('click', (e) => {
 							document.querySelectorAll('.selected-wrapper').forEach((elm) => {
 								elm.classList.remove('selected-wrapper');
@@ -2398,10 +2533,51 @@
 					}
 					li.append(sub_ul);
 					break;
-				}
-				case RESOURCE_SYMBOL:
+				}}
+				ul.append(li);
+			});
+			wrapper.append(ul);
+			wrapper.append(create_elm('div.split'));
+			toolbar.append(wrapper);
+		}
+		/** 記号パレット
+		 -------------------------------*/
+		{
+			const wrapper = create_elm('div.tool-container.palette-wrapper');
+			const h4 = create_elm('h4').text( get_lang('toolbar-symbols') ).appendTo(wrapper);
+			const ul = create_elm('ul');
+			[
+				SYMBOL_ERASER,
+				SYMBOL_SYMBOL,
+			].forEach((resource_type, i) => {
+				const li = create_elm('li.palette-item');
+				li.setAttribute('title', get_lang('palette-' + resource_type));
+				li.style.setProperty('background-image', `url(./assets/img/common/${resource_type}.png)`);
+
+				// クリック時の動作
+				li.addEventListener('click', (e) => {
+					document.querySelectorAll('.selected-item').forEach((elm) => {
+						elm.classList.remove('selected-item');
+					});
+					li.classList.add('selected-item');
+					mouse_state.current_palette_type = PALETTE_SELECT_SYMBOL;
+					switch (resource_type) {
+					case RESOURCE_BACKET:
+						mouse_state.current_palette_item = li.getAttribute('backet-state');
+						break;
+					case RESOURCE_DYNAMITE_1:
+						mouse_state.current_palette_item = RESOURCE_DYNAMITE_1.replace('1', li.getAttribute('dynamite-level'));
+						break;
+					default:
+						mouse_state.current_palette_item = resource_type;
+						break;
+					}
+				});
+
+				// サブメニューの作成
+				switch (resource_type) {
+				case SYMBOL_SYMBOL:
 				{
-					// 記号
 					li.setAttribute('id', 'palette-symbol');
 					li.setAttribute('symbol-id', 10);
 					li.addEventListener('mouseenter', (e) => {
@@ -2416,7 +2592,7 @@
 					sub_ul.style.setProperty('--count-y', '5');
 					sub_ul.style.setProperty('left', 'initial');
 					sub_ul.style.setProperty('right', '-31px');
-					for (let j = 0; j <= 49; j++) {
+					for (let j = 0; j <= 41; j++) {
 						const sub_li = create_elm('li');
 						sub_li.style.setProperty('background-image', `url(./assets/img/symbol/${j}.png)`);
 						sub_li.addEventListener('click', (e) => {
@@ -2562,23 +2738,46 @@
 
 		// 各セルのデータを特定する
 		let arr = [];
-		let opt;
+		let opt = {};
 		let num_str = '';
 		for (; i < map_str.length; i++) {
 			const c = map_str.charAt(i);
-			if (c.match(/[a-s]/)) {
-				if (opt) {
+			if (c.match(/[a-z]/)) {
+				if (opt.land_char) {
 					if (num_str) {
-						opt.resource_count = parseInt(num_str);
-						num_str = '';
+						if (opt.symbol_char) {
+							opt.symbol_id = parseInt(num_str);
+							num_str = '';
+						} else if (opt.resource_char) {
+							opt.resource_count = parseInt(num_str);
+							num_str = '';
+						} else {
+							opt.land_num = parseInt(num_str);
+							num_str = '';
+						}
 					}
 					arr.push(opt);
 				}
 				opt = {
 					land_char: c
 				};
-			} else if (c.match(/[A-Z]/)) {
+			} else if (c.match(/[A-W]/)) {
+				if (num_str) {
+					opt.land_num = parseInt(num_str);
+					num_str = '';
+				}
 				opt.resource_char = c;
+			} else if (c.match(/[X-Z]/)) {
+				if (num_str) {
+					if (opt.resource_char) {
+						opt.resource_count = parseInt(num_str);
+						num_str = '';
+					} else {
+						opt.land_num = parseInt(num_str);
+						num_str = '';
+					}
+				}
+				opt.symbol_char = c;
 			} else if (c.match(/[0-9]/)) {
 				num_str += c;
 			}
@@ -2637,32 +2836,16 @@
 				const cell = map_cell[y][x];
 				let cell_str = '';
 				switch (cell.land_type) {
-				case LAND_NONE:
-					cell_str += 'a';
-					break;
-				case LAND_PLAIN:
-					cell_str += 'b';
-					break;
-				case LAND_STATION_L:
-					cell_str += 'c';
-					break;
-				case LAND_STATION_R:
-					cell_str += 'd';
-					break;
-				case LAND_STATION_F:
-					cell_str += 'e';
-					break;
+				case LAND_NONE: cell_str += 'a'; break;
+				case LAND_PLAIN: cell_str += 'b'; break;
+				case LAND_STATION_L: cell_str += 'c'; break;
+				case LAND_STATION_R: cell_str += 'd'; break;
+				case LAND_STATION_F: cell_str += 'e'; break;
 				case LAND_TREE:
 					switch (cell.life) {
-					case 3:
-						cell_str += 'f';
-						break;
-					case 2:
-						cell_str += 'g';
-						break;
-					case 1:
-						cell_str += 'h';
-						break;
+					case 3: cell_str += 'f'; break;
+					case 2: cell_str += 'g'; break;
+					case 1: cell_str += 'h'; break;
 					case 0:
 						if (cell.resource_type === RESOURCE_WOOD && cell.resource_count === 1) {
 							cell_str += 'j';
@@ -2674,15 +2857,9 @@
 					break;
 				case LAND_IRON:
 					switch (cell.life) {
-					case 3:
-						cell_str += 'k';
-						break;
-					case 2:
-						cell_str += 'l';
-						break;
-					case 1:
-						cell_str += 'm';
-						break;
+					case 3: cell_str += 'k'; break;
+					case 2: cell_str += 'l'; break;
+					case 1: cell_str += 'm'; break;
 					case 0:
 						if (cell.resource_type === RESOURCE_IRON && cell.resource_count === 1) {
 							cell_str += 'o';
@@ -2692,21 +2869,21 @@
 						break;
 					}
 					break;
-				case LAND_ROCK:
-					cell_str += 'p';
-					break;
-				case LAND_WATER:
-					cell_str += 'q';
-					break;
-				case LAND_BRIDGE:
-					cell_str += 'r';
-					break;
-				case LAND_STEAM:
-					cell_str += 's';
-					break;
-				case LAND_THORN:
-					cell_str += 't';
-					break;
+				case LAND_ROCK   : cell_str += 'p'; break;
+				case LAND_WATER  : cell_str += 'q'; break;
+				case LAND_BRIDGE : cell_str += 'r'; break;
+				case LAND_STEAM  : cell_str += 's'; break;
+				case LAND_THORN  : cell_str += 't'; break;
+				case LAND_COLOR_1: cell_str += 'u1'; break;
+				case LAND_COLOR_2: cell_str += 'u2'; break;
+				case LAND_COLOR_3: cell_str += 'u3'; break;
+				case LAND_COLOR_4: cell_str += 'u4'; break;
+				case LAND_COLOR_5: cell_str += 'u5'; break;
+				case LAND_COLOR_6: cell_str += 'u6'; break;
+				case LAND_COLOR_7: cell_str += 'u7'; break;
+				case LAND_COLOR_8: cell_str += 'u8'; break;
+				case LAND_COLOR_9: cell_str += 'u9'; break;
+				case LAND_COLOR_10: cell_str += 'u10'; break;
 				}
 				switch (cell.resource_type) {
 				case RESOURCE_C_RAIL:
@@ -2823,6 +3000,14 @@
 					break;
 				case RESOURCE_BOLT:
 					cell_str += 'V';
+					break;
+				}
+				switch (cell.symbol_type) {
+				default:
+					break;
+				case SYMBOL_SYMBOL:
+					const symbol_id = cell.td.getAttribute('symbol-id');
+					cell_str += 'X' + symbol_id;
 					break;
 				}
 				ret += cell_str;
@@ -3000,7 +3185,6 @@
 	 */
 	window.addEventListener('mouseup', (e) => {
 		mouse_state.is_down = false;
-		getSelection().empty();
 	});
 
 
@@ -3030,6 +3214,14 @@
 			// メインウィンドウとモーダルウィンドウの参照を取得
 			main_window = document.getElementById('main-window');
 			modal_window = document.getElementById('modal-window');
+			count_wrapper = document.getElementById('count-wrapper');
+			count_elm['wood'] = document.getElementById('count-wood');
+			count_elm['iron'] = document.getElementById('count-iron');
+			count_elm['r-wood'] = document.getElementById('count-r-wood');
+			count_elm['r-iron'] = document.getElementById('count-r-iron');
+			count_elm['r-rail'] = document.getElementById('count-r-rail');
+			count_elm['c-rail'] = document.getElementById('count-c-rail');
+			count_elm['bridge'] = document.getElementById('count-bridge');
 
 			// モーダルウィンドウのアウターをクリックしたときにモーダルウィンドウを閉じる
 			// modal_window.addEventListener('click', (e) => {
@@ -3043,15 +3235,6 @@
 
 			// マップのラッパー要素を作成してメインウィンドウに挿入する
 			map_wrapper = create_elm('div#map-table-wrapper.hidden').appendTo(main_window);
-
-			count_wrapper = document.getElementById('count-wrapper');
-			count_elm['wood'] = document.getElementById('count-wood');
-			count_elm['iron'] = document.getElementById('count-iron');
-			count_elm['r-wood'] = document.getElementById('count-r-wood');
-			count_elm['r-iron'] = document.getElementById('count-r-iron');
-			count_elm['r-rail'] = document.getElementById('count-r-rail');
-			count_elm['c-rail'] = document.getElementById('count-c-rail');
-			count_elm['bridge'] = document.getElementById('count-bridge');
 
 			// マップのラッパー要素をフェードイン
 			setTimeout(() => {

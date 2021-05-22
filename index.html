@@ -12,15 +12,15 @@
 		<script src="./assets/js/lib/base64.js"></script>
 		<script src="./assets/js/lib/rawinflate.js"></script>
 		<script src="./assets/js/lib/rawdeflate.js"></script>
-		<script src="./assets/js/ext.js?ver=1.1a"></script>
-		<script src="./assets/js/main.js?ver=1.1a"></script>
-		<link href="./assets/css/reset.css?ver=1.1a" rel="stylesheet">
-		<link href="./assets/css/style.css?ver=1.1a" rel="stylesheet">
+		<script src="./assets/js/ext.js?ver=1.2"></script>
+		<script src="./assets/js/main.js?ver=1.2"></script>
+		<link href="./assets/css/reset.css?ver=1.2" rel="stylesheet">
+		<link href="./assets/css/style.css?ver=1.2" rel="stylesheet">
 		<link rel="icon" type="image/png" href="./assets/img/plains/c-rail-rl.png">
 	</head>
 	<body>
 		<div id="main-window">
-			<div id="count-wrapper">
+			<div id="count-wrapper" class="hidden">
 				<p><span trans-key="count-wood">木の数</span>: <span id="count-wood">0</span></p>
 				<p><span trans-key="count-iron">鉄の数</span>: <span id="count-iron">0</span></p>
 				<p><span trans-key="count-r-wood">木(資材)の数</span>: <span id="count-r-wood">0</span></p>
@@ -37,7 +37,7 @@
 			<div id="bot-balloon" style="display: none;"></div>
 		</div>
 		<div id="help-ja" class="help-content">
-			<h1>Unrailed! Map Maker Ver.1.1a</h1>
+			<h1>Unrailed! Map Maker Ver.1.2</h1>
 			<p><a href="https://gungeespla.github.io/Unrailed-Map-Maker/">Unrailed! Map Maker</a>は、ゲーム『<a href="https://unrailed-game.com/">Unrailed!</a>』の平面図を作れる非公式のツールです。</p>
 			<h2>TIPS</h2>
 			<ul>
@@ -45,11 +45,12 @@
 				<li>資材の上でマウスホイールを上下すると、資材の数を変更することができます。</li>
 				<li>一部のキーを押しながらマウスをクリックすると、特殊な動作を行うことができます。
 					<ul>
-						<li>Ctrlを押しながらクリック: 塗りつぶし</li>
+						<li>Ctrlを押しながらクリック: 塗りつぶし(地形のみ)</li>
 						<li>Shiftを押しながらクリック: 直線で塗る</li>
 						<li>Altを押しながらクリック: 最短経路で塗る</li>
 					</ul>
 				</li>
+				<li>右クリックするとその場所の地形を選択した状態になります。(スポイト)</li>
 				<li>Shiftキーを押しながらF1～F8キーを押すと、そのときのマップを一時的に保存できます。
 					<ul>
 						<li>F1～F8キーを押すと、保存した一時データを呼び出せます。</li>
@@ -60,7 +61,7 @@
 			<p class="author">© 2021 <a href="https://twitter.com/GungeeSpla">@GungeeSpla</a></p>
 		</div>
 		<div id="help-en" class="help-content">
-			<h1>Unrailed! Map Maker Ver.1.1a</h1>
+			<h1>Unrailed! Map Maker Ver.1.2</h1>
 			<p><a href="https://gungeespla.github.io/Unrailed-Map-Maker/">Unrailed! Map Maker</a> is the unofficial online software for creating images of the <a href="https://unrailed-game.com/">Unrailed!</a> floor plan.</p>
 			<p class="author">© 2021 <a href="https://twitter.com/GungeeSpla">@GungeeSpla</a></p>
 		</div>

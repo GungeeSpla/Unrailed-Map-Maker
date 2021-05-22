@@ -96,26 +96,28 @@ for (i = 0; i < map_str.length; i++) {
 		str += c;
 		break;
 	}
-	if (new_mode && str) {
-		const num = parseInt(str);
-		str = '';
-		switch (mode) {
-		case 'b':
-			biome = [
-				BIOME_PLAINS,
-				BIOME_DESERT,
-				BIOME_SNOW,
-				BIOME_HELL,
-				BIOME_SPACE,
-				BIOME_MARS,
-			][num - 1];
-			break;
-		case 'w':
-			width = num;
-			break;
-		case 'h':
-			height = num;
-			break;
+	if (new_mode) {
+		if (str) {
+			const num = parseInt(str);
+			str = '';
+			switch (mode) {
+			case 'b':
+				biome = [
+					BIOME_PLAINS,
+					BIOME_DESERT,
+					BIOME_SNOW,
+					BIOME_HELL,
+					BIOME_SPACE,
+					BIOME_MARS,
+				][num - 1];
+				break;
+			case 'w':
+				width = num;
+				break;
+			case 'h':
+				height = num;
+				break;
+			}
 		}
 		mode = new_mode;
 	}
@@ -125,23 +127,46 @@ for (i = 0; i < map_str.length; i++) {
 	}
 }
 let defs = [];
-let opt;
+let opt = {};
 let num_str = '';
 for (; i < map_str.length; i++) {
 	const c = map_str.charAt(i);
-	if (c.match(/[a-s]/)) {
-		if (opt) {
+	if (c.match(/[a-z]/)) {
+		if (opt.land_char) {
 			if (num_str) {
-				opt.resource_count = parseInt(num_str);
-				num_str = '';
+				if (opt.symbol_char) {
+					opt.symbol_id = parseInt(num_str);
+					num_str = '';
+				} else if (opt.resource_char) {
+					opt.resource_count = parseInt(num_str);
+					num_str = '';
+				} else {
+					opt.land_num = parseInt(num_str);
+					num_str = '';
+				}
 			}
 			defs.push(opt);
 		}
 		opt = {
 			land_char: c
 		};
-	} else if (c.match(/[A-Z]/)) {
+	} else if (c.match(/[A-W]/)) {
+		if (num_str) {
+			opt.land_num = parseInt(num_str);
+			num_str = '';
+		}
 		opt.resource_char = c;
+	} else if (c.match(/[X-Z]/)) {
+		if (num_str) {
+			if (opt.resource_char) {
+				opt.resource_count = parseInt(num_str);
+				num_str = '';
+			} else {
+				opt.land_num = parseInt(num_str);
+				num_str = '';
+			}
+		}
+		opt.symbol_char = c;
 	} else if (c.match(/[0-9]/)) {
 		num_str += c;
 	}
@@ -153,8 +178,9 @@ for (let i = 0, y = 0; y < height; y++) {
 		const def = defs ? defs[i] : null;
 		const td = document.createElement('td');
 		const div = document.createElement('div');
+		const div2 = document.createElement('div');
 		const p = document.createElement('p');
-		td.append(div, p);
+		td.append(div, p, div2);
 		if (def) {
 			switch (def.land_char) {
 			case 'a': td.style.setProperty('background-image', 'url(./assets/img/plains/plain.png)'); break;
@@ -177,6 +203,7 @@ for (let i = 0, y = 0; y < height; y++) {
 			case 'r': td.style.setProperty('background-image', 'url(./assets/img/plains/bridge.png)'); break;
 			case 's': td.style.setProperty('background-image', 'url(./assets/img/plains/steam.png)'); break;
 			case 't': td.style.setProperty('background-image', 'url(./assets/img/plains/thorn.png)'); break;
+			case 'u': td.style.setProperty('background-image', 'url(./assets/img/color/'+def.land_num+'.png)'); break;
 			}
 			switch (def.resource_char) {
 			case 'A': div.style.setProperty('background-image', 'url(./assets/img/plains/c-rail-rl.png)'); break;
@@ -201,6 +228,9 @@ for (let i = 0, y = 0; y < height; y++) {
 			case 'T': div.style.setProperty('background-image', 'url(./assets/img/face/face-'+def.resource_count+'.png)'); break;
 			case 'U': div.style.setProperty('background-image', 'url(./assets/img/symbol/'+def.resource_count+'.png)'); break;
 			case 'V': div.style.setProperty('background-image', 'url(./assets/img/common/resource-bolt.png)'); break;
+			}
+			switch (def.symbol_char) {
+			case 'X': div2.style.setProperty('background-image', 'url(./assets/img/symbol/'+def.symbol_id+'.png)'); console.log("!"); break;
 			}
 		}
 		tr.append(td);
