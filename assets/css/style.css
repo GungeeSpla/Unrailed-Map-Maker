@@ -718,15 +718,15 @@ textarea {
 		}
 		[land-type=tree] {
 			background-image: url(../img/plains/tree-a.png);
-			background-color: #de7d62;
+			background-color: #ec7453;
 		}
 		[land-type=tree][life="2"] {
 			background-image: url(../img/plains/tree-a-2.png);
-			background-color: #de7d62;
+			background-color: #ec7453;
 		}
 		[land-type=tree][life="1"] {
 			background-image: url(../img/plains/tree-a-1.png);
-			background-color: #de7d62;
+			background-color: #ec7453;
 		}
 		[land-type=tree][life="0"] {
 			background-image: url(../img/plains/transparent.png);
