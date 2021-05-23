@@ -2,7 +2,7 @@
 
 	/** 定数定義
 	 */
-	const VERSION = '1.2c'
+	const VERSION = '1.3'
 	const DEFAULT_WIDTH  = 40;
 	const DEFAULT_HEIGHT = 20;
 	const AUTOSAVE_DELAY = 1000;
@@ -63,6 +63,7 @@
 
 	const SYMBOL_ERASER         = 'symbol-eraser';
 	const SYMBOL_SYMBOL         = 'symbol-symbol';
+	const SYMBOL_FACE           = 'symbol-face';
 	const SYMBOL_NONE           = 'symbol-none';
 
 	const MINE_AXE      = 'mine-axe-and-pickaxe';
@@ -258,6 +259,7 @@
 	palette-resource-face|キャラクター|Character
 	palette-symbol-eraser|消しゴム(記号を消す)|Eraser
 	palette-symbol-symbol|記号|Symbol
+	palette-symbol-face|キャラクター|Character
 	palette-mine-axe-and-pickaxe|斧とつるはしで採掘する|Mine with axe and pickaxe
 	palette-mine-dynamite|ダイナマイトで採掘する|Mine with dynamite
 	toolbar-help|ヘルプ|Help
@@ -446,6 +448,7 @@
 				}
 				switch (def.symbol_char) {
 				case 'X': this._symbol_type = SYMBOL_SYMBOL; this.td.setAttribute('symbol-type',  SYMBOL_SYMBOL); this.td.setAttribute('symbol-id', def.symbol_id); this.td.style.setProperty('--symbol-image', 'url(../img/symbol/'+def.symbol_id+'.png)'); break;
+				case 'Y': this._symbol_type = SYMBOL_FACE; this.td.setAttribute('symbol-type',  SYMBOL_FACE); this.td.setAttribute('face-id', def.symbol_id); this.td.style.setProperty('--face-image', 'url(../img/face/face-'+def.symbol_id+'.png)'); break;
 				}
 			}
 			this.set_event();
@@ -806,16 +809,23 @@
 		}
 		set symbol_type(value) {
 			switch (value) {
-			case RESOURCE_ERASER:
-				this._symbol_type = RESOURCE_NONE;
+			case SYMBOL_ERASER:
+				this._symbol_type = SYMBOL_NONE;
 				this.td.setAttribute('symbol-type',  value);
 				break;
-			default:
+			case SYMBOL_SYMBOL:
 				this._symbol_type = value;
 				this.td.setAttribute('symbol-type',  value);
 				const symbol_id = document.getElementById('palette-symbol').getAttribute('symbol-id');
 				this.td.setAttribute('symbol-id', symbol_id);
 				this.td.style.setProperty('--symbol-image', 'url(../img/symbol/'+symbol_id+'.png)');
+				break;
+			case SYMBOL_FACE:
+				this._symbol_type = value;
+				this.td.setAttribute('symbol-type',  value);
+				const face_id = document.getElementById('palette-symbol-face').getAttribute('face-id');
+				this.td.setAttribute('face-id', face_id);
+				this.td.style.setProperty('--face-image', 'url(../img/face/face-'+face_id+'.png)');
 				break;
 			}
 		}
@@ -2409,7 +2419,7 @@
 				RESOURCE_BACKET,
 				RESOURCE_DYNAMITE_1,
 				RESOURCE_BOLT,
-				RESOURCE_FACE,
+				/*RESOURCE_FACE,*/
 			].forEach((resource_type, i) => {
 
 				const dir = (1 <= i && i <= 4) ? 'plains' : 'common';
@@ -2556,6 +2566,7 @@
 			[
 				SYMBOL_ERASER,
 				SYMBOL_SYMBOL,
+				SYMBOL_FACE,
 			].forEach((resource_type, i) => {
 				const li = create_elm('li.palette-item');
 				li.setAttribute('title', get_lang('palette-' + resource_type));
@@ -2610,6 +2621,39 @@
 							li.classList.remove('hover');
 							li.style.setProperty('background-image', `url(./assets/img/symbol/${j}.png)`);
 							li.setAttribute('symbol-id', j);
+						});
+						sub_ul.append(sub_li);
+					}
+					li.append(sub_ul);
+					break;
+				}
+				case SYMBOL_FACE:
+				{
+					li.setAttribute('id', 'palette-symbol-face');
+					li.setAttribute('face-id', 13);
+					li.addEventListener('mouseenter', (e) => {
+						li.classList.add('hover');
+					});
+					li.addEventListener('mouseleave', (e) => {
+						li.classList.remove('hover');
+					});
+					li.style.setProperty('background-image', `url(./assets/img/face/face-13.png)`);
+					const sub_ul = create_elm('ul');
+					sub_ul.style.setProperty('--count-x', '8');
+					sub_ul.style.setProperty('--count-y', '6');
+					sub_ul.style.setProperty('left', 'initial');
+					sub_ul.style.setProperty('right', '-29px');
+					for (let j = 0; j <= 41; j++) {
+						const sub_li = create_elm('li');
+						sub_li.style.setProperty('background-image', `url(./assets/img/face/face-${j}.png)`);
+						sub_li.addEventListener('click', (e) => {
+							document.querySelectorAll('.selected-wrapper').forEach((elm) => {
+								elm.classList.remove('selected-wrapper');
+							});
+							li.classList.add('selected-wrapper');
+							li.classList.remove('hover');
+							li.style.setProperty('background-image', `url(./assets/img/face/face-${j}.png)`);
+							li.setAttribute('face-id', j);
 						});
 						sub_ul.append(sub_li);
 					}
@@ -3013,8 +3057,10 @@
 				default:
 					break;
 				case SYMBOL_SYMBOL:
-					const symbol_id = cell.td.getAttribute('symbol-id');
-					cell_str += 'X' + symbol_id;
+					cell_str += 'X' + cell.td.getAttribute('symbol-id');
+					break;
+				case SYMBOL_FACE:
+					cell_str += 'Y' + cell.td.getAttribute('face-id');
 					break;
 				}
 				ret += cell_str;

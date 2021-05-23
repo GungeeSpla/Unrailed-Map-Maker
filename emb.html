@@ -230,7 +230,8 @@ for (let i = 0, y = 0; y < height; y++) {
 			case 'V': div.style.setProperty('background-image', 'url(./assets/img/common/resource-bolt.png)'); break;
 			}
 			switch (def.symbol_char) {
-			case 'X': div2.style.setProperty('background-image', 'url(./assets/img/symbol/'+def.symbol_id+'.png)'); console.log("!"); break;
+			case 'X': div2.style.setProperty('background-image', 'url(./assets/img/symbol/'+def.symbol_id+'.png)'); break;
+			case 'Y': div2.style.setProperty('background-image', 'url(./assets/img/face/face-'+def.symbol_id+'.png)'); break;
 			}
 		}
 		tr.append(td);

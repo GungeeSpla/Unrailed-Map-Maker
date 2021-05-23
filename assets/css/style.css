@@ -851,6 +851,9 @@ textarea {
 		[symbol-type=symbol-symbol] .symbol {
 			background-image: var(--symbol-image);
 		}
+		[symbol-type=symbol-face] .symbol {
+			background-image: var(--face-image);
+		}
 		/** 接続線路
 		 -------------------------------*/
 		[resource-type=c-rail] .resource {
