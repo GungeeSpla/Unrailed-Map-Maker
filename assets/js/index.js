@@ -1119,7 +1119,7 @@ import tempstate from './tempstate.js';
 
 		if (e.key.match(/^F\d$/) && !I.key_state[e.key]) {
 			const num = parseInt(e.key.replace('F', ''));
-			if (num <= 4) {
+			if (num <= 8) {
 				if	(e.shiftKey) {
 					tempstate.save(num);
 				} else {

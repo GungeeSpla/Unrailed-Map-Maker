@@ -31,6 +31,7 @@ const tempstate = {
 		while (this.redo_stack.length) {
 			this.redo_stack.pop();
 		}
+		I.state_save_data = [];
 	},
 
 	/** .redo()
