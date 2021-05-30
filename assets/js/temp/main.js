@@ -2643,7 +2643,7 @@
 					sub_ul.style.setProperty('--count-y', '6');
 					sub_ul.style.setProperty('left', 'initial');
 					sub_ul.style.setProperty('right', '-29px');
-					for (let j = 0; j <= 41; j++) {
+					for (let j = z; j <= 41; j++) {
 						const sub_li = create_elm('li');
 						sub_li.style.setProperty('background-image', `url(./assets/img/face/face-${j}.png)`);
 						sub_li.addEventListener('click', (e) => {

@@ -9,10 +9,24 @@
 <script src="./assets/js/ext.js?ver=1.0"></script>
 <style>
 body{
+user-select:none;
 margin:0;
 padding:0;
 overflow:hidden;
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu,Cantarell, "Helvetica Neue", Arial,"Hiragino Kaku Gothic ProN", "Hiragino Sans", "BIZ UDPGothic", Meiryo, sans-serif;
+cursor:pointer;
+}
+#cover{
+position:fixed;
+left:0;
+top:0;
+width:100%;
+height:100%;
+opacity:0;
+background:white;
+transition: opacity 300ms ease;
+}
+#cover:hover{
+opacity:0.15;
 }
 table{
 border-collapse:collapse;
@@ -50,10 +64,48 @@ margin:0;
 padding:0;
 text-shadow: white 0px -1px, white 1px 0px, white 0px 1px, white -1px 0px;
 }
+.train-container {
+position: absolute;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+filter: drop-shadow(7px 7px 1px rgba(0, 0, 0, .5));
+}
+.train-engine,
+.train-wagon {
+position: absolute;
+left: 0;
+top: 0;
+--cell-size: 32px;
+--width-cell: 2;
+--height-cell: 1;
+--rotate: 0deg;
+transform-origin: center center;
+background-color: transparent;
+background-size: 100%;
+background-repeat: no-repeat;
+background-position: center;
+}
+.train-engine {
+width: calc(var(--cell-size) * 2);
+height: calc(var(--cell-size) * 1);
+transform: translate(calc(var(--cell-size) * -1), calc(var(--cell-size) * -0.5)) rotate(var(--rotate));
+background-image: url(./assets/img/train/engine.png);
+}
+.train-wagon {
+width: calc(var(--cell-size) * 1.5);
+height: calc(var(--cell-size) * 1);
+background-size: 90%;
+transform: translate(calc(var(--cell-size) * -0.75), calc(var(--cell-size) * -0.5)) rotate(var(--rotate));
+}
 </style>
 </head>
 <body>
 <script>
+const wrapper = document.createElement('div');
+wrapper.css('transform-origin', 'left top');
+document.body.append(wrapper);
 const DEFAULT_WIDTH  = 40;
 const DEFAULT_HEIGHT = 20;
 const BIOME_PLAINS = 'plains';
@@ -61,7 +113,27 @@ const BIOME_DESERT = 'desert';
 const BIOME_SNOW   = 'snow';
 const BIOME_HELL   = 'hell';
 const BIOME_SPACE  = 'space';
-const BIOME_MARS   = 'mars';
+const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+const TRAIN_ENGINE_LENGTH = 2;
+const TRAIN_WAGON_LENGTH = 1.55;
+const WAGON_NAMES = [
+	'CraftingWagon',
+	'StorageWagon',
+	'TankWagon',
+	'DynamiteWagon',
+	'SuperchargerWagon',
+	'CollectorWagon',
+	'BrakeWagon',
+	'GhostWagon',
+	'BuckinatorWagon',
+	'MilkWagon',
+	'MinerWagon',
+	'TransformerWagon',
+	'SlotMachineWagon',
+	'LightWagon',
+	'CompassWagon',
+	'CannonWagon',
+];
 const query_str = location.href.slice(location.href.indexOf('?') + 1);
 const queries = {};
 query_str.split('&').forEach((query_str) => {
@@ -79,6 +151,7 @@ const map_str = decodeURIComponent(queries.share).inflate() + 'a';
 let biome = BIOME_PLAINS;
 let width = DEFAULT_WIDTH;
 let height = DEFAULT_HEIGHT;
+let traindata;
 let str = '';
 let mode = '';
 let i;
@@ -89,6 +162,7 @@ for (i = 0; i < map_str.length; i++) {
 	case 'b':
 	case 'w':
 	case 'h':
+	case 't':
 	case 'm':
 		new_mode = c;
 		break;
@@ -121,10 +195,28 @@ for (i = 0; i < map_str.length; i++) {
 		}
 		mode = new_mode;
 	}
-	if (mode === 'm') {
+	if (mode === 't' || mode === 'm') {
 		i++;
 		break;
 	}
+}
+if (mode === 't') {
+	const start = i;
+	for (; i < map_str.length; i++) {
+		const c = map_str.charAt(i);
+		if (c === '-') {	
+			break;
+		}
+	}
+	const substr = map_str.substr(start, i - start);
+	const arr = substr.split(',');
+	const x = parseInt(arr[0]);
+	const y = parseInt(arr[1]);
+	const a = parseFloat(arr[2]);
+	const d =  parseInt(arr[3]);
+	const w = arr[4];
+	traindata = { x, y, a, d, w };
+	i += 2;
 }
 let defs = [];
 let opt = {};
@@ -181,57 +273,58 @@ for (let i = 0, y = 0; y < height; y++) {
 		const div2 = document.createElement('div');
 		const p = document.createElement('p');
 		td.append(div, p, div2);
+		td.attr('x', x).attr('y', y);
 		if (def) {
 			switch (def.land_char) {
-			case 'a': td.style.setProperty('background-image', 'url(./assets/img/plains/plain.png)'); break;
-			case 'b': td.style.setProperty('background-image', 'url(./assets/img/plains/plain.png)'); break;
-			case 'c': td.style.setProperty('background-image', 'url(./assets/img/plains/station-l.png)'); break;
-			case 'd': td.style.setProperty('background-image', 'url(./assets/img/plains/station-r.png)'); break;
-			case 'e': td.style.setProperty('background-image', 'url(./assets/img/plains/station-f.png)'); break;
-			case 'f': td.style.setProperty('background-image', 'url(./assets/img/plains/tree-a.png)'); td.style.setProperty('background-color', '#de7d62'); break;
-			case 'g': td.style.setProperty('background-image', 'url(./assets/img/plains/tree-a-2.png)'); td.style.setProperty('background-color', '#de7d62'); break;
-			case 'h': td.style.setProperty('background-image', 'url(./assets/img/plains/tree-a-1.png)'); td.style.setProperty('background-color', '#de7d62'); break;
-			case 'i': td.style.setProperty('background-color', '#de7d62'); break;
-			case 'j': td.style.setProperty('background-color', '#de7d62'); div.style.setProperty('background-image', 'url(./assets/img/plains/resource-wood.png)'); break;
-			case 'k': td.style.setProperty('background-image', 'url(./assets/img/plains/iron.png)'); break;
-			case 'l': td.style.setProperty('background-image', 'url(./assets/img/plains/iron-2.png)'); break;
-			case 'm': td.style.setProperty('background-image', 'url(./assets/img/plains/iron-1.png)'); break;
-			case 'n': td.style.setProperty('background-image', 'url(./assets/img/plains/iron-0.png)'); break;
-			case 'o': td.style.setProperty('background-image', 'url(./assets/img/plains/iron-0.png)'); div.style.setProperty('background-image', 'url(./assets/img/plains/resource-iron.png)'); break;
-			case 'p': td.style.setProperty('background-image', 'url(./assets/img/plains/rock.png)'); break;
-			case 'q': td.style.setProperty('background-image', 'url(./assets/img/plains/water.png)'); break;
-			case 'r': td.style.setProperty('background-image', 'url(./assets/img/plains/bridge.png)'); break;
-			case 's': td.style.setProperty('background-image', 'url(./assets/img/plains/steam.png)'); break;
-			case 't': td.style.setProperty('background-image', 'url(./assets/img/plains/thorn.png)'); break;
-			case 'u': td.style.setProperty('background-image', 'url(./assets/img/color/'+def.land_num+'.png)'); break;
+			case 'a': td.css('background-image', 'url(./assets/img/plains/plain.png)'); break;
+			case 'b': td.css('background-image', 'url(./assets/img/plains/plain.png)'); break;
+			case 'c': td.css('background-image', 'url(./assets/img/plains/station-l.png)'); break;
+			case 'd': td.css('background-image', 'url(./assets/img/plains/station-r.png)'); break;
+			case 'e': td.css('background-image', 'url(./assets/img/plains/station-f.png)'); break;
+			case 'f': td.css('background-image', 'url(./assets/img/plains/tree-a.png)'); td.css('background-color', '#de7d62'); break;
+			case 'g': td.css('background-image', 'url(./assets/img/plains/tree-a-2.png)'); td.css('background-color', '#de7d62'); break;
+			case 'h': td.css('background-image', 'url(./assets/img/plains/tree-a-1.png)'); td.css('background-color', '#de7d62'); break;
+			case 'i': td.css('background-color', '#de7d62'); break;
+			case 'j': td.css('background-color', '#de7d62'); div.css('background-image', 'url(./assets/img/plains/resource-wood.png)'); break;
+			case 'k': td.css('background-image', 'url(./assets/img/plains/iron.png)'); break;
+			case 'l': td.css('background-image', 'url(./assets/img/plains/iron-2.png)'); break;
+			case 'm': td.css('background-image', 'url(./assets/img/plains/iron-1.png)'); break;
+			case 'n': td.css('background-image', 'url(./assets/img/plains/iron-0.png)'); break;
+			case 'o': td.css('background-image', 'url(./assets/img/plains/iron-0.png)'); div.css('background-image', 'url(./assets/img/plains/resource-iron.png)'); break;
+			case 'p': td.css('background-image', 'url(./assets/img/plains/rock.png)'); break;
+			case 'q': td.css('background-image', 'url(./assets/img/plains/water.png)'); break;
+			case 'r': td.css('background-image', 'url(./assets/img/plains/bridge.png)'); break;
+			case 's': td.css('background-image', 'url(./assets/img/plains/steam.png)'); break;
+			case 't': td.css('background-image', 'url(./assets/img/plains/thorn.png)'); break;
+			case 'u': td.css('background-image', 'url(./assets/img/color/'+def.land_num+'.png)'); break;
 			}
 			switch (def.resource_char) {
-			case 'A': div.style.setProperty('background-image', 'url(./assets/img/plains/c-rail-rl.png)'); break;
-			case 'B': div.style.setProperty('background-image', 'url(./assets/img/plains/c-rail-tb.png)'); break;
-			case 'C': div.style.setProperty('background-image', 'url(./assets/img/plains/c-rail-tr.png)'); break;
-			case 'D': div.style.setProperty('background-image', 'url(./assets/img/plains/c-rail-rb.png)'); break;
-			case 'E': div.style.setProperty('background-image', 'url(./assets/img/plains/c-rail-bl.png)'); break;
-			case 'F': div.style.setProperty('background-image', 'url(./assets/img/plains/c-rail-tl.png)'); break;
-			case 'G': div.style.setProperty('background-image', 'url(./assets/img/plains/rail-rl.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
-			case 'H': div.style.setProperty('background-image', 'url(./assets/img/plains/rail-tb.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
-			case 'I': div.style.setProperty('background-image', 'url(./assets/img/plains/rail-tr.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
-			case 'J': div.style.setProperty('background-image', 'url(./assets/img/plains/rail-rb.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
-			case 'K': div.style.setProperty('background-image', 'url(./assets/img/plains/rail-bl.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
-			case 'L': div.style.setProperty('background-image', 'url(./assets/img/plains/rail-tl.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
-			case 'M': div.style.setProperty('background-image', 'url(./assets/img/plains/resource-wood.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
-			case 'N': div.style.setProperty('background-image', 'url(./assets/img/plains/resource-iron.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
-			case 'O': div.style.setProperty('background-image', 'url(./assets/img/common/resource-axe.png)'); break;
-			case 'P': div.style.setProperty('background-image', 'url(./assets/img/common/resource-pickaxe.png)'); break;
-			case 'Q': div.style.setProperty('background-image', 'url(./assets/img/common/resource-backet.png)'); break;
-			case 'R': div.style.setProperty('background-image', 'url(./assets/img/common/resource-backet-empty.png)'); break;
-			case 'S': div.style.setProperty('background-image', 'url(./assets/img/common/dynamite-'+def.resource_count+'.png)'); break;
-			case 'T': div.style.setProperty('background-image', 'url(./assets/img/face/face-'+def.resource_count+'.png)'); break;
-			case 'U': div.style.setProperty('background-image', 'url(./assets/img/symbol/'+def.resource_count+'.png)'); break;
-			case 'V': div.style.setProperty('background-image', 'url(./assets/img/common/resource-bolt.png)'); break;
+			case 'A': div.css('background-image', 'url(./assets/img/plains/c-rail-rl.png)');td.attr('d', 'rl').attr('d1', '1').attr('d2', '3'); break;
+			case 'B': div.css('background-image', 'url(./assets/img/plains/c-rail-tb.png)');td.attr('d', 'tb').attr('d1', '0').attr('d2', '2'); break;
+			case 'C': div.css('background-image', 'url(./assets/img/plains/c-rail-tr.png)');td.attr('d', 'tr').attr('d1', '0').attr('d2', '1'); break;
+			case 'D': div.css('background-image', 'url(./assets/img/plains/c-rail-rb.png)');td.attr('d', 'rb').attr('d1', '1').attr('d2', '2'); break;
+			case 'E': div.css('background-image', 'url(./assets/img/plains/c-rail-bl.png)');td.attr('d', 'bl').attr('d1', '2').attr('d2', '3'); break;
+			case 'F': div.css('background-image', 'url(./assets/img/plains/c-rail-tl.png)');td.attr('d', 'tl').attr('d1', '0').attr('d2', '3'); break;
+			case 'G': div.css('background-image', 'url(./assets/img/plains/rail-rl.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'H': div.css('background-image', 'url(./assets/img/plains/rail-tb.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'I': div.css('background-image', 'url(./assets/img/plains/rail-tr.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'J': div.css('background-image', 'url(./assets/img/plains/rail-rb.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'K': div.css('background-image', 'url(./assets/img/plains/rail-bl.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'L': div.css('background-image', 'url(./assets/img/plains/rail-tl.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'M': div.css('background-image', 'url(./assets/img/plains/resource-wood.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'N': div.css('background-image', 'url(./assets/img/plains/resource-iron.png)'); if (def.resource_count>1) p.textContent = def.resource_count; break;
+			case 'O': div.css('background-image', 'url(./assets/img/common/resource-axe.png)'); break;
+			case 'P': div.css('background-image', 'url(./assets/img/common/resource-pickaxe.png)'); break;
+			case 'Q': div.css('background-image', 'url(./assets/img/common/resource-backet.png)'); break;
+			case 'R': div.css('background-image', 'url(./assets/img/common/resource-backet-empty.png)'); break;
+			case 'S': div.css('background-image', 'url(./assets/img/common/dynamite-'+def.resource_count+'.png)'); break;
+			case 'T': div.css('background-image', 'url(./assets/img/face/face-'+def.resource_count+'.png)'); break;
+			case 'U': div.css('background-image', 'url(./assets/img/symbol/'+def.resource_count+'.png)'); break;
+			case 'V': div.css('background-image', 'url(./assets/img/common/resource-bolt.png)'); break;
 			}
 			switch (def.symbol_char) {
-			case 'X': div2.style.setProperty('background-image', 'url(./assets/img/symbol/'+def.symbol_id+'.png)'); break;
-			case 'Y': div2.style.setProperty('background-image', 'url(./assets/img/face/face-'+def.symbol_id+'.png)'); break;
+			case 'X': div2.css('background-image', 'url(./assets/img/symbol/'+def.symbol_id+'.png)'); break;
+			case 'Y': div2.css('background-image', 'url(./assets/img/face/face-'+def.symbol_id+'.png)'); break;
 			}
 		}
 		tr.append(td);
@@ -239,7 +332,211 @@ for (let i = 0, y = 0; y < height; y++) {
 	}
 	table.append(tr);
 }
-document.body.append(table);
+wrapper.append(table);
+(() => {
+	if (traindata) {
+		function get_cell(x, y) {
+			return document.querySelector(`td[x="${x}"][y="${y}"]`);
+		}
+		function get_cell_next(td, dir) {
+			if (isNaN(dir)) {
+				return null;
+			}
+			const x = parseInt(td.attr('x'));
+			const y = parseInt(td.attr('y'));
+			const nx = x + DIRS[dir][0];
+			const ny = y + DIRS[dir][1];
+			return get_cell(nx, ny);
+		}
+		console.log(traindata.d);
+		const root_cell = get_cell(traindata.x, traindata.y);
+		const root_cell_to = get_cell_next(root_cell, traindata.d);
+		if (!(root_cell && root_cell_to)) {
+			console.log(traindata.x);
+			console.log(traindata.y);
+			console.log(nx);
+			console.log(ny);
+			console.log(root_cell);
+			console.log(root_cell_to);
+			return;
+		}
+		root_cell.to = root_cell_to;
+		let cell = root_cell;
+		for (let i = 0; i < 99; i++) {
+			const d1 = parseInt(cell.attr('d1'));
+			const d2 = parseInt(cell.attr('d2'));
+			const c1 = get_cell_next(cell, d1);
+			const c2 = get_cell_next(cell, d2);
+			const c = (c1 === cell.to) ? c2 : c1;
+			const d = (c1 === cell.to) ? d2 : d1;
+			if (c1 && c2) {
+				cell.from = c;
+				cell.from_dir = d;
+				c.to = cell;
+				cell = c;
+			} else {
+				break;
+			}
+		}
+		const names = [];
+		for (let i = 0; i < traindata.w.length; i++) {
+			const num = traindata.w[i].toNumber();
+			const name = WAGON_NAMES[num];
+			names.push(name);
+		}
+		const container = document.createElement('div');
+		container.classList.add('train-container');
+		const engine = document.createElement('div');
+		engine.classList.add('train-engine');
+		engine.css('--cell-size', `${cell_size}px`);
+		container.append(engine);
+		const wagons = [];
+		names.forEach((name) => {
+			const wagon = document.createElement('div');
+			wagon.css('background-image', 'url(./assets/img/train/'+name+'.png)');
+			wagon.classList.add('train-wagon');
+			wagon.css('--cell-size', `${cell_size}px`);
+			wagons.push(wagon);
+			container.append(wagon);
+		});
+		wrapper.append(container);
+		let alpha = traindata.a;
+		const pos = get_pos_in_cell(root_cell, alpha);
+		engine.css({
+			'left': `${pos.x}px`,
+			'top': `${pos.y}px`,
+			'--rotate': `${pos.rotate}deg`,
+		});
+		alpha -= (TRAIN_ENGINE_LENGTH + TRAIN_WAGON_LENGTH) / 2;
+		wagons.forEach((elm) => {
+			const pos = calc_wagon_pos(alpha);
+			elm.css({
+				'left': `${pos.x}px`,
+				'top': `${pos.y}px`,
+				'--rotate': `${pos.rotate}deg`,
+			});
+			alpha -= TRAIN_WAGON_LENGTH;
+		});
+		function calc_wagon_pos(alpha) {
+			let prev = null;
+			let next = root_cell.from;
+			let nxnx = next && next.from;
+			let a = 0;
+			let pos;
+			for (let i = 0; i < 99; i++) {
+				if (!nxnx) {
+					pos = get_pos_in_cell(next || root_cell, 1);
+					break;
+				}
+				if (a <= alpha && alpha < a + 1) {
+					const b = alpha - a;
+					pos = get_pos_in_cell(next || root_cell, b);
+					break;
+				}
+				a--;
+				prev = next;
+				if (i > 0) {
+					next = next.from;
+					nxnx = next.from;
+				}
+			}
+			return pos;
+		};
+		function easeInQuad(t, b, c, d) {
+			t /= d;
+			return c * t * t + b;
+		};
+		function easeOutQuad(t, b, c, d) {
+			t /= d;
+			return -c * t * (t - 2) + b;
+		};
+		function easeInOutQuad(t, b, c, d) {
+			t /= d / 2;
+			if (t < 1) return c / 2 * t * t + b;
+			t -= 1;
+			return -c / 2 * (t * (t - 2) - 1) + b;
+		};
+		function get_pos_in_cell(cell, alpha) {
+			let x = 0;
+			let y = 0;
+			let rotate = 0;
+			switch (cell.attr('d')) {
+			case 'tb':
+				if (cell.from_dir === 2) {
+					alpha = 1 - alpha;
+					rotate += 180;
+				}
+				// 上から下へ
+				rotate += 90;
+				x = 0.5;
+				y = alpha;
+				break;
+			case 'rl':
+				if (cell.from_dir === 1) {
+					alpha = 1 - alpha;
+					rotate += 180;
+				}
+				// 左から右へ
+				rotate += 0;
+				x = alpha;
+				y = 0.5;
+				break;
+			case 'tr': // ┗
+				if (cell.from_dir === 2) {
+					alpha = 1 - alpha;
+					rotate += 180;
+				}
+				// 上から右へ
+				rotate += easeInOutQuad(alpha,  90, -90, 1);
+				x       = easeInQuad   (alpha, 0.5, 0.5, 1);
+				y       = easeOutQuad  (alpha, 0.0, 0.5, 1);
+				break;
+			case 'rb': // ┏
+				if (cell.from_dir === 3) {
+					alpha = 1 - alpha;
+					rotate += 180;
+				}
+				// 右から下へ
+				rotate += easeInOutQuad(alpha, 180,  -90, 1);
+				x       = easeOutQuad  (alpha, 1.0, -0.5, 1);
+				y       = easeInQuad   (alpha, 0.5,  0.5, 1);
+				break;
+			case 'bl': // ┓
+				if (cell.from_dir === 0) {
+					alpha = 1 - alpha;
+					rotate += 180;
+				}
+				// 下から左へ
+				rotate += easeInOutQuad(alpha, 270,  -90, 1);
+				x       = easeInQuad   (alpha, 0.5, -0.5, 1);
+				y       = easeOutQuad  (alpha, 1.0, -0.5, 1);
+				break;
+			case 'tl': // ┛
+				if (cell.from_dir === 1) {
+					alpha = 1 - alpha;
+					rotate += 180;
+				}
+				// 左から上へ
+				rotate += easeInOutQuad(alpha,   0,  -90, 1);
+				x       = easeOutQuad  (alpha, 0.0,  0.5, 1);
+				y       = easeInQuad   (alpha, 0.5, -0.5, 1);
+				break;
+			}
+			x += parseInt(cell.attr('x'));
+			y += parseInt(cell.attr('y'));
+			x *= cell_size;
+			y *= cell_size;
+			return { x, y, rotate };
+		};
+	}
+})();
+const cover = document.createElement('div');
+cover.attr('id', 'cover');
+cover.attr('title', 'Unrailed! Map Makerで開く');
+cover.addEventListener('click', (e) => {
+	window.open(location.href.replace('emb.html', ''));
+});
+document.body.append(cover);
 window.onresize = () => {
 	const ww = window.innerWidth;
 	const tw = width * cell_size;
@@ -248,9 +545,9 @@ window.onresize = () => {
 		r = '1.00';
 	}
 	if (r === '1.00') {
-		table.style.setProperty('transform', 'none');
+		wrapper.css('transform', 'none');
 	} else {
-		table.style.setProperty('transform', 'scale('+r+')');
+		wrapper.css('transform', 'scale('+r+')');
 	}
 };
 window.onresize();

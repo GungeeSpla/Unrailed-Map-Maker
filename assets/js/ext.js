@@ -31,6 +31,45 @@ Element.prototype.trigger = function(type) {
 	return this;
 };
 
+/** Element.attr(name, value)
+ */
+Element.prototype.attr = function(name, value) {
+	if (arguments.length === 1) {
+		return this.getAttribute(name);
+	} else if (arguments.length === 2) {
+		this.setAttribute(name, value);
+		return this;
+	}
+};
+
+/** Element.css(name, value)
+ */
+Element.prototype.css = function() {
+	if (typeof arguments[0] === 'object') {
+		Object.keys(arguments[0]).forEach((key) => {
+			this.style.setProperty(key, arguments[0][key]);
+		});
+	} else {
+		if (arguments.length === 1) {
+			return this.style.getPropertyValue(arguments[0]);
+		} else {
+			for (let i = 0; i < arguments.length; i += 2) {
+				this.style.setProperty(arguments[i], arguments[i + 1]);
+			}
+		}
+	}
+	return this;
+};
+
+/** Element.on(names, callback)
+ */
+Element.prototype.on = function(names, callback, opt) {
+	names.split(' ').forEach((name) => {
+		this.addEventListener(name, callback, opt);
+	});
+	return this;
+};
+
 /** Stringクラスの拡張
  -------------------------------------*/
 
@@ -71,3 +110,32 @@ String.prototype.deflate = function () {
 String.prototype.inflate = function () {
 	return Base64.btou(RawDeflate.inflate(Base64.fromBase64(this)));
 }
+
+/** String.toNumber
+ */
+String.prototype.toNumber = function () {
+	return this.charCodeAt(0) - ('a').charCodeAt(0);
+}
+
+/** Numberクラスの拡張
+ -------------------------------------*/
+
+/** Number.times
+ */
+Number.prototype.times = function (callback) {
+	for (let i = 0; i < this; i++) {
+		callback(i);
+	}
+};
+
+/** Number.padding
+ */
+Number.prototype.padding = function (digit) {
+	return String(this).padStart(digit, '0');
+};
+
+/** Number.toAlphabet
+ */
+Number.prototype.toAlphabet = function () {
+	return String.fromCharCode(('a').charCodeAt(0) + this)
+};

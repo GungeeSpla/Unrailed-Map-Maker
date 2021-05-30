@@ -1,0 +1,25 @@
+{
+  "name": "Unrailed-Map-Maker",
+  "version": "1.0.0",
+  "description": "Unrailed! Map Maker",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GungeeSpla/Unrailed-Map-Maker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GungeeSpla/Unrailed-Map-Maker/issues"
+  },
+  "homepage": "https://github.com/GungeeSpla/Unrailed-Map-Maker#readme",
+  "devDependencies": {
+    "webpack": "^5.37.1",
+    "webpack-cli": "^4.7.0"
+  }
+}
